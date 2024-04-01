@@ -57,6 +57,13 @@ func UserExists(login string) bool {
 	return user.ID != 0
 }
 
+// GetUser возвращает пользователя по его логину
+func GetUser(hashedPassword string) (User, error) {
+	var user User
+	dbExpr.First(&user, "hash_password = ?", hashedPassword)
+	return user, nil
+}
+
 // AddTask добавляет задачу в базу данных и возвращает её ID
 func AddTask(userId int, expression string) int {
 	expr := Expression{Expression: expression, Status: StatusInProgress}

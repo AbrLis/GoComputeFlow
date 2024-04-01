@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"GoComputeFlow/pkg/api/auth"
 	"GoComputeFlow/pkg/database"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -42,9 +43,9 @@ func LoginUser(c *gin.Context) {
 		return
 	}
 
-	// Проверка, что такой пользователь зарегистрирован
-	if !database.UserExists(req.Login) {
-		c.JSON(401, gin.H{"error": "Пользователь не зарегистрирован"})
+	// Проверка, существует ли пользователь с указанным логином и паролем
+	if ok, msg := auth.CheckUserExists(req.Login, req.Password); !ok {
+		c.JSON(msg.Code, msg.Msg)
 		return
 	}
 
