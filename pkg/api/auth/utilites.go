@@ -22,5 +22,6 @@ func CheckUserExists(login, password string) (bool, Error) {
 		return false, Error{Code: 401, Msg: gin.H{"error password": err.Error()}}
 	}
 
-	return true, Error{}
+	// Если всё в порядке, то в поле Code передаю ID пользователя
+	return true, Error{Code: int(user.ID), Msg: nil}
 }
