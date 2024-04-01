@@ -1,6 +1,8 @@
 package api
 
 import (
+	"GoComputeFlow/pkg/calculator"
+	"io"
 	"log"
 	"os"
 	"time"
@@ -46,7 +48,8 @@ func LoginUser(c *gin.Context) {
 	}
 
 	// Проверка, существует ли пользователь с указанным логином и паролем
-	if ok, msg := auth.CheckUserExists(req.Login, req.Password); !ok {
+	ok, msg := auth.CheckUserExists(req.Login, req.Password)
+	if !ok {
 		c.JSON(msg.Code, msg.Msg)
 		return
 	}
@@ -55,10 +58,11 @@ func LoginUser(c *gin.Context) {
 	now := time.Now()
 	token := jwt.NewWithClaims(
 		jwt.SigningMethodHS256, jwt.MapClaims{
-			"login": req.Login,
-			"nbf":   now.Unix(),
-			"exp":   now.Add(time.Hour * 24).Unix(),
-			"iat":   now.Unix(),
+			"user_id": msg.Code, // ID пользователя
+			"login":   req.Login,
+			"nbf":     now.Unix(),
+			"exp":     now.Add(time.Hour * 24).Unix(),
+			"iat":     now.Unix(),
 		},
 	)
 
@@ -70,4 +74,26 @@ func LoginUser(c *gin.Context) {
 
 	log.Println("Успешно получен токен для пользователя", req.Login)
 	c.JSON(200, gin.H{"token": tokenString})
+}
+
+// AddExpressionHandler обработчик для добавления арифметического выражения
+func AddExpressionHandler(c *gin.Context) {
+	bodyBytes, err := io.ReadAll(c.Request.Body)
+	if err != nil || len(bodyBytes) == 0 {
+		c.JSON(500, gin.H{"error": "Empty body or error reading body"})
+		return
+	}
+
+	// Отправка строки калькулятору
+	userId, ok := c.Get("user_id")
+	if !ok {
+		c.JSON(500, gin.H{"error": "invalid Token JWT"})
+		return
+	}
+	if ok := calculator.AddExpressionToQueue(string(bodyBytes), userId.(string)); !ok {
+		c.JSON(500, gin.H{"error": "Error parsing exprssion"})
+		return
+	}
+
+	c.JSON(200, gin.H{"msg": "Expression added to queue"})
 }
