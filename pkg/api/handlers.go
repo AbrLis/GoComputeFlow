@@ -11,7 +11,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var SECRETKEY = os.Getenv("SECRET_KEY")
+var SECRETKEY = os.Getenv("SECRETKEY")
 
 type registerUserRequest struct {
 	Login    string `json:"login"`
