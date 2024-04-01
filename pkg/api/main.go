@@ -13,10 +13,10 @@ func StartServer() {
 		apiRouters.POST(registerPath, RegisterUser)
 		apiRouters.POST(LoginPath, LoginUser)
 
-		//apiRouters.POST(addExpressionPath, ensureAuth(), AddExpressionHandler)
-		//apiRouters.GET(getExpressionsPath, ensureAuth(), GetExpressionsHandler)
-		//apiRouters.GET(getValuePath, ensureAuth(), GetValueHandler)
-		//apiRouters.GET(getOperationsPath, ensureAuth(), GetOperationsHandler)
+		//apiRouters.POST(addExpressionPath, auth.EnsureAuth(), AddExpressionHandler)
+		//apiRouters.GET(getExpressionsPath, auth.EnsureAuth(), GetExpressionsHandler)
+		//apiRouters.GET(getValuePath, auth.EnsureAuth(), GetValueHandler)
+		//apiRouters.GET(getOperationsPath, auth.EnsureAuth(), GetOperationsHandler)
 		//apiRouters.GET(monitoring, GetMonitoringHandler)
 	}
 

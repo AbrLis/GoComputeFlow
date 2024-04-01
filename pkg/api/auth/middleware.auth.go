@@ -10,7 +10,7 @@ import (
 
 var SECRETKEY = os.Getenv("SECRETKEY")
 
-func ensureAuth() gin.HandlerFunc {
+func EnsureAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.Request.Header.Get("Authorization")
 		jwtTokenString := strings.Split(token, " ")
