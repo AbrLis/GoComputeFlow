@@ -1,8 +1,11 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"
 	"log"
+
+	"github.com/gin-gonic/gin"
+
+	"GoComputeFlow/pkg/api/auth"
 )
 
 func StartServer() {
@@ -13,7 +16,7 @@ func StartServer() {
 		apiRouters.POST(registerPath, RegisterUser)
 		apiRouters.POST(LoginPath, LoginUser)
 
-		//apiRouters.POST(addExpressionPath, auth.EnsureAuth(), AddExpressionHandler)
+		apiRouters.POST(addExpressionPath, auth.EnsureAuth(), AddExpressionHandler)
 		//apiRouters.GET(getExpressionsPath, auth.EnsureAuth(), GetExpressionsHandler)
 		//apiRouters.GET(getValuePath, auth.EnsureAuth(), GetValueHandler)
 		//apiRouters.GET(getOperationsPath, auth.EnsureAuth(), GetOperationsHandler)
