@@ -8,14 +8,14 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var SECRETKEY = os.Getenv("SECRET_KEY")
+var SECRETKEY = os.Getenv("SECRETKEY")
 
 func ensureAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.Request.Header.Get("Authorization")
 		jwtTokenString := strings.Split(token, " ")
 		if token == "" || len(jwtTokenString) != 2 {
-			c.JSON(401, gin.H{"message": "Unauthorized"})
+			c.JSON(401, gin.H{"message": "Unauthorized, required jwt token"})
 			c.Abort()
 			return
 		}
