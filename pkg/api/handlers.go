@@ -33,6 +33,8 @@ func RegisterUser(c *gin.Context) {
 	}
 
 	log.Println("Успешно зарегистрирован пользователь с ID", id)
+	c.JSON(200, gin.H{"msg": "Пользователь с логином " + req.Login + " успешно зарегистрирован"})
+
 }
 
 // LoginUser получение токена по логину и паролю
