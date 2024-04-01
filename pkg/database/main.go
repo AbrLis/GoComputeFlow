@@ -58,9 +58,9 @@ func UserExists(login string) bool {
 }
 
 // GetUser возвращает пользователя по его логину
-func GetUser(hashedPassword string) (User, error) {
+func GetUser(login string) (User, error) {
 	var user User
-	dbExpr.First(&user, "hash_password = ?", hashedPassword)
+	dbExpr.First(&user, "login = ?", login)
 	return user, nil
 }
 
