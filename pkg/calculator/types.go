@@ -15,7 +15,7 @@ type Token struct {
 
 // TaskCalculate - структура для формирования задачи
 type TaskCalculate struct {
-	ID         string  `json:"id"`
+	ID         uint    `json:"id"`
 	Expression []Token `json:"expression"`
 }
 
