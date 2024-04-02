@@ -1,9 +1,9 @@
 package database
 
 const (
-	StatusInProgress TaskStatus = iota
-	StatusCompleted
-	StatusError
+	StatusInProgress TaskStatus = "In progress"
+	StatusCompleted  TaskStatus = "Completed"
+	StatusError      TaskStatus = "Error"
 )
 
-type TaskStatus int
+type TaskStatus string
