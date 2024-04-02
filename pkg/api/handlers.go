@@ -97,3 +97,20 @@ func AddExpressionHandler(c *gin.Context) {
 
 	c.JSON(200, gin.H{"msg": "Expression added to queue"})
 }
+
+// GetExpressionsHandler обработчик для получения списка арифметических выражений пользователя
+func GetExpressionsHandler(c *gin.Context) {
+	userId, ok := c.Get("user_id")
+	if !ok {
+		c.JSON(500, gin.H{"error": "invalid userID"})
+		return
+	}
+
+	expressions, err := database.GetAllTasks(userId.(uint))
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Ошибка получения списка из базы данных"})
+		return
+	}
+
+	c.JSON(200, expressions)
+}
