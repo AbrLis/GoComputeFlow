@@ -64,12 +64,12 @@ func GetUser(login string) (User, error) {
 	return user, nil
 }
 
-// AddTask добавляет задачу в базу данных и возвращает её ID
-func AddTask(userId int, expression string) int {
-	expr := Expression{Expression: expression, Status: StatusInProgress}
+// AddExprssion добавляет задачу в базу данных
+func AddExprssion(userId uint, expression string) bool {
+	expr := Expression{UserId: userId, Expression: expression, Status: StatusInProgress}
 	dbExpr.Create(&expr)
 
-	return int(expr.ID)
+	return true
 }
 
 // SetTaskResult устанавливает результат выполнения задачи
@@ -81,7 +81,7 @@ func SetTaskResult(userId, exprId int, status TaskStatus) {
 }
 
 // GetAllTasks возвращает все задачи определённого юзера в базе данных
-func GetAllTasks(userId int) ([]Expression, error) {
+func GetAllTasks(userId uint) ([]Expression, error) {
 	var expressions []Expression
 	dbExpr.Find(&expressions, "user_id = ?", userId)
 	return expressions, nil

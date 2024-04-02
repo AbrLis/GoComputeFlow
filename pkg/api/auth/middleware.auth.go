@@ -41,7 +41,13 @@ func EnsureAuth() gin.HandlerFunc {
 		// Добавление id пользователя в контекст
 		if claims, ok := tokenFromString.Claims.(jwt.MapClaims); ok && tokenFromString.Valid {
 			if userId, ok := claims["user_id"]; ok {
-				c.Set("user_id", userId)
+				temp, ok := userId.(float64)
+				if !ok {
+					c.JSON(500, gin.H{"error": "Не удалось преобразовать ID пользователя"})
+					c.Abort()
+					return
+				}
+				c.Set("user_id", uint(temp))
 			} else {
 				c.JSON(500, gin.H{"error": "Не найден ID пользователя в токене"})
 				c.Abort()

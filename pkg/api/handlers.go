@@ -90,7 +90,7 @@ func AddExpressionHandler(c *gin.Context) {
 		c.JSON(500, gin.H{"error": "invalid Token JWT"})
 		return
 	}
-	if ok := calculator.AddExpressionToQueue(string(bodyBytes), userId.(string)); !ok {
+	if ok := calculator.AddExpressionToQueue(string(bodyBytes), userId.(uint)); !ok {
 		c.JSON(500, gin.H{"error": "Error parsing exprssion"})
 		return
 	}
