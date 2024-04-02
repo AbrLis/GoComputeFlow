@@ -7,6 +7,14 @@ import (
 
 var done chan struct{} // Канал завершения вычислительных операций
 
+// Константы таймаутов вычислений по умолчанию
+const (
+	ADDTIMEOUT      = 5 * time.Second
+	SUBTRACTTIMEOUT = 3 * time.Second
+	MULTIPLYTIMEOUT = 4 * time.Second
+	DIVIDETIMEOUT   = 6 * time.Second
+)
+
 // Token - структура для формирования польской нотации выражения
 type Token struct {
 	Value string
