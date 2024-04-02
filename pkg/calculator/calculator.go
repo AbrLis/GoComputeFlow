@@ -1,6 +1,7 @@
 package calculator
 
 import (
+	"GoComputeFlow/pkg/database"
 	"log"
 	"sync"
 	"time"
@@ -26,16 +27,22 @@ func CreateCalculators() {
 }
 
 // AddExpressionToQueue добавляет выражение в очередь задач
-func AddExpressionToQueue(exprssion string, userId string) bool {
+func AddExpressionToQueue(expression string, userId uint) bool {
 	// Парсим выражение
-	tokens, err := ParseExpression(exprssion)
+	tokens, err := ParseExpression(expression)
 	if err != nil {
 		log.Println("Error parsing expression: ", err)
 		return false
 	}
 
-	// Добавляем задачу в очередь
+	// Добавляю задачу в очередь
 	Calc.Queue = append(Calc.Queue, TaskCalculate{ID: userId, Expression: tokens})
+
+	// Добавляю задачу в список вычислений юзера в базу данных
+	if ok := database.AddExprssion(userId, expression); !ok {
+		return false
+	}
+
 	return true
 }
 
