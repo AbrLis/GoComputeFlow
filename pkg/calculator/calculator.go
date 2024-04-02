@@ -17,13 +17,16 @@ func CreateCalculators() {
 		Queue:           []TaskCalculate{},
 		queueInProcess:  map[string]TaskCalculate{},
 		taskChannel:     make(chan TaskCalculate),
-		AddTimeout:      5 * time.Second,
-		SubtractTimeout: 3 * time.Second,
-		MultiplyTimeout: 4 * time.Second,
-		DivideTimeout:   6 * time.Second,
+		AddTimeout:      ADDTIMEOUT,
+		SubtractTimeout: SUBTRACTTIMEOUT,
+		MultiplyTimeout: MULTIPLYTIMEOUT,
+		DivideTimeout:   DIVIDETIMEOUT,
 		mu:              sync.Mutex{},
 	}
 	Calc.PingTimeoutCalc = make([]time.Time, Calc.Count)
+
+	// TODO: Добавить запуск распределителя вычислений в своём потоке, которой будет следить за очередью задач и
+	// передавать задачи вычислителям, так же будет получать от них ответы и заносить результаты в бд
 }
 
 // AddExpressionToQueue добавляет выражение в очередь задач
@@ -36,7 +39,9 @@ func AddExpressionToQueue(expression string, userId uint) bool {
 	}
 
 	// Добавляю задачу в очередь
+	Calc.mu.Lock()
 	Calc.Queue = append(Calc.Queue, TaskCalculate{ID: userId, Expression: tokens})
+	Calc.mu.Unlock()
 
 	// Добавляю задачу в список вычислений юзера в базу данных
 	if ok := database.AddExprssion(userId, expression); !ok {
