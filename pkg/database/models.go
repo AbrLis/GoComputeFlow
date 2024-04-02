@@ -12,8 +12,8 @@ type User struct {
 }
 
 type Expression struct {
-	gorm.Model
-	UserId     uint
+	gorm.Model `json:"-"`
+	UserId     uint `json:"-"`
 	Expression string
 	Result     string
 	Status     TaskStatus
