@@ -18,8 +18,8 @@ func StartServer() {
 
 		apiRouters.POST(addExpressionPath, auth.EnsureAuth(), AddExpressionHandler)
 		apiRouters.GET(getExpressionsPath, auth.EnsureAuth(), GetExpressionsHandler)
-		//apiRouters.GET(getValuePath, auth.EnsureAuth(), GetValueHandler)
-		//apiRouters.GET(getOperationsPath, auth.EnsureAuth(), GetOperationsHandler)
+		apiRouters.GET(getValuePath, auth.EnsureAuth(), GetValueHandler)
+		apiRouters.GET(getOperationsPath, auth.EnsureAuth(), GetOperationsHandler)
 		//apiRouters.GET(monitoring, GetMonitoringHandler)
 	}
 

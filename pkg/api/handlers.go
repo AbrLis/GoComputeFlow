@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"GoComputeFlow/pkg/api/auth"
@@ -113,4 +114,29 @@ func GetExpressionsHandler(c *gin.Context) {
 	}
 
 	c.JSON(200, expressions)
+}
+
+// GetOperationsHandler обработчик для получения списка времени выполнения операций
+func GetOperationsHandler(c *gin.Context) {
+	c.JSON(200, calculator.GetTimeoutsOperations())
+}
+
+// GetValueHandler возвращает конткретную задачу по ID
+func GetValueHandler(c *gin.Context) {
+	userId, ok := c.Get("user_id")
+	if !ok {
+		c.JSON(500, gin.H{"error": "invalid userID"})
+		return
+	}
+	taskID, err := strconv.Atoi(c.Param("task_id"))
+	if err != nil {
+		c.JSON(400, gin.H{"error": "invalid taskID"})
+		return
+	}
+	result, _ := database.GetTask(userId.(uint), taskID)
+	if result.UserId == 0 {
+		c.JSON(404, gin.H{"error": "task not found"})
+		return
+	}
+	c.JSON(200, result)
 }

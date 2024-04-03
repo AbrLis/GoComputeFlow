@@ -103,7 +103,7 @@ func GetTaskStatus(userId, exprId int) string {
 }
 
 // GetTask возвращает задачу по её идентификатору
-func GetTask(userId, exprId int) (Expression, error) {
+func GetTask(userId uint, exprId int) (Expression, error) {
 	var expression Expression
 	dbExpr.First(&expression, "user_id = ? AND id = ?", userId, exprId)
 	return expression, nil
