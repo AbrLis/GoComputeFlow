@@ -2,6 +2,7 @@ package calculator
 
 import (
 	"GoComputeFlow/pkg/database"
+	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -49,6 +50,16 @@ func AddExpressionToQueue(expression string, userId uint) bool {
 	}
 
 	return true
+}
+
+// GetTimeoutsOperations возвращает время вычислений для каждой из операций
+func GetTimeoutsOperations() map[string]string {
+	return map[string]string{
+		"+": fmt.Sprintf("%.2f sec", Calc.AddTimeout.Seconds()),
+		"-": fmt.Sprintf("%.2f sec", Calc.SubtractTimeout.Seconds()),
+		"*": fmt.Sprintf("%.2f sec", Calc.MultiplyTimeout.Seconds()),
+		"/": fmt.Sprintf("%.2f sec", Calc.DivideTimeout.Seconds()),
+	}
 }
 
 //// RunCalculators запускает вычислители ожидающие очередь задач
