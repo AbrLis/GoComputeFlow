@@ -22,4 +22,4 @@ go.work
 
 .idea
 *.db
-*.http
+testAPI/
