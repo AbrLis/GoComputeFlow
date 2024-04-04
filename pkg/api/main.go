@@ -8,7 +8,7 @@ import (
 	"GoComputeFlow/pkg/api/auth"
 )
 
-func StartServer() {
+func StartServer(host, port string) {
 	router := gin.Default()
 
 	apiRouters := router.Group(apiVersion)
@@ -23,9 +23,9 @@ func StartServer() {
 		//apiRouters.GET(monitoring, GetMonitoringHandler)
 	}
 
-	log.Printf("Starting server on %s:%s ", PortHost, HostPath)
+	log.Printf("Starting server on %s%s ", host, port)
 	go func() {
-		err := router.Run(HostPath + PortHost)
+		err := router.Run(host + port)
 		if err != nil {
 			log.Println("Error starting server: ", err)
 			panic(err)
