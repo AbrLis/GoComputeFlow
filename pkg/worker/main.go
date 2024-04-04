@@ -1,30 +1,29 @@
 package worker
 
 import (
-	"fmt"
 	"log"
 	"strconv"
 	"sync"
 	"time"
 )
 
-var worker *Worker
+var DataWorker *Worker
 
 // CreateWorker создает новый экземпляр структуры вычислителя
 func CreateWorker() {
-	worker = &Worker{
+	DataWorker = &Worker{
 		Count:           COUNTWORKERS,
 		CountFree:       COUNTWORKERSFREE,
 		Queue:           []TaskCalculate{},
-		ResultQueue:     []float64{},
+		ResultQueue:     []Result{},
 		taskChannel:     make(chan TaskCalculate),
 		AddTimeout:      ADDTIMEOUT,
 		SubtractTimeout: SUBTRACTTIMEOUT,
 		MultiplyTimeout: MULTIPLYTIMEOUT,
 		DivideTimeout:   DIVIDETIMEOUT,
-		mu:              sync.Mutex{},
+		Mu:              sync.Mutex{},
 	}
-	worker.PingTimeoutCalc = make([]time.Time, worker.Count)
+	DataWorker.PingTimeoutCalc = make([]time.Time, DataWorker.Count)
 
 	RunWorkers()   // Запускаем вычислители
 	RunAllocator() // Распределитель вычислений
@@ -34,21 +33,21 @@ func CreateWorker() {
 func RunAllocator() {
 	go func() {
 		for {
-			if worker.CountFree > 0 {
-				if len(worker.Queue) == 0 {
+			if DataWorker.CountFree > 0 {
+				if len(DataWorker.Queue) == 0 {
 					log.Println("Задач в очереди нет, ожидание 2 секунды...")
 					time.Sleep(2 * time.Second)
 					continue
 				}
 
 				// Отправка задачи свободным вычислителям
-				worker.mu.Lock()
-				worker.CountFree--
-				task := worker.Queue[0]
+				DataWorker.Mu.Lock()
+				DataWorker.CountFree--
+				task := DataWorker.Queue[0]
 				// Перевод из очереди ожидания в очередь обработки
-				worker.Queue = worker.Queue[1:]
-				worker.mu.Unlock()
-				worker.taskChannel <- task
+				DataWorker.Queue = DataWorker.Queue[1:]
+				DataWorker.Mu.Unlock()
+				DataWorker.taskChannel <- task
 			} else {
 				// Ждать пока не появятся свободные вычислители
 				log.Println("Нет свободных вычислителей, ожидание...")
@@ -61,28 +60,29 @@ func RunAllocator() {
 
 // RunWorkers Запускает вычислители в потоках
 func RunWorkers() {
-	for i := 0; i < worker.Count; i++ {
+	for i := 0; i < DataWorker.Count; i++ {
 		go func(calcId int) {
 			for {
 				select {
-				case tokens := <-worker.taskChannel:
+				case tokens := <-DataWorker.taskChannel:
 					log.Printf("Вычислитель %d - получил задачу: %d\n", calcId, tokens.ID)
-					result, flagError := worker.calculateValue(calcId, tokens.Expression)
-					fmt.Println(result, flagError) // !ЗАГЛУШКА
-
-					//worker.sendResult(tokens.ID, flagError, result)
-					// TODO: Реализовать передачу результата по gRPC
-					log.Println("Вычислитель отправил результат в бд: ", tokens.ID)
+					result, flagError := DataWorker.calculateValue(calcId, tokens.Expression)
+					DataWorker.Mu.Lock()
+					DataWorker.ResultQueue = append(
+						DataWorker.ResultQueue, Result{ID: tokens.ID, FlagError: flagError, Result: result},
+					)
+					DataWorker.Mu.Unlock()
+					log.Println("Вычислитель отправил результат в очередь результатов: ", tokens.ID)
 
 					// Переход в режим ожидания
-					worker.CountFree++
+					DataWorker.CountFree++
 					continue
 
 				case <-time.After(3 * time.Second): // Пингуемся записывая текущее время в PingTimeoutCalc
 					log.Println("Вычислитель пингуется: ", calcId)
-					worker.mu.Lock()
-					worker.PingTimeoutCalc[calcId] = time.Now()
-					worker.mu.Unlock()
+					DataWorker.Mu.Lock()
+					DataWorker.PingTimeoutCalc[calcId] = time.Now()
+					DataWorker.Mu.Unlock()
 				}
 			}
 		}(i)
@@ -143,9 +143,9 @@ func (c *Worker) calculateValue(idCalc int, tokens []Token) (float64, bool) {
 				}
 
 				// После кажого вычисления отправка пинга что вычислитель жив
-				c.mu.Lock()
+				c.Mu.Lock()
 				c.PingTimeoutCalc[idCalc] = time.Now()
-				c.mu.Unlock()
+				c.Mu.Unlock()
 			}
 		}
 		if len(stack) != 1 {
