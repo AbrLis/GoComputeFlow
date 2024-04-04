@@ -30,16 +30,23 @@ type Token struct {
 	IsOp  bool
 }
 
+// Result - структура для очереди ответа
+type Result struct {
+	ID        uint
+	FlagError bool
+	Result    float64
+}
+
 type Worker struct {
 	Count           int
 	CountFree       int
 	Queue           []TaskCalculate
-	ResultQueue     []float64
+	ResultQueue     []Result
 	taskChannel     chan TaskCalculate
 	PingTimeoutCalc []time.Time
 	AddTimeout      time.Duration
 	SubtractTimeout time.Duration
 	MultiplyTimeout time.Duration
 	DivideTimeout   time.Duration
-	mu              sync.Mutex
+	Mu              sync.Mutex
 }
