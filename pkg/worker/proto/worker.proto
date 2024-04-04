@@ -1,0 +1,52 @@
+syntax = "proto3";
+package worker;
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "GoComputeFlow/pkg/worker/proto";
+
+
+// Ответ таймаутов вычислителей в текстовом виде
+message TimeoutsMessage {
+  string add = 1;
+  string subtract = 2;
+  string multiply = 3;
+  string divide = 4;
+}
+
+// Ожидаемое собщение таймаутов
+message TimeoutsRequest {
+  google.protobuf.Duration add = 1;
+  google.protobuf.Duration subtract = 2;
+  google.protobuf.Duration multiply = 3;
+  google.protobuf.Duration divide = 4;
+}
+
+// Определение токена
+message Token {
+  string value = 1;
+  bool isOp = 2;
+}
+
+// Получение выражения для вычисления
+message TaskRequest {
+  int32 user_id = 1;
+  repeated Token expression = 2;
+}
+
+// Ответ на задачу
+message TaskRespons{
+  int32 user_id = 1;
+  float value = 2;
+  bool flag_error = 3;
+}
+
+
+// Сервисы ответа
+service WorkerService {
+  rpc GetTimeouts(google.protobuf.Empty) returns (TimeoutsMessage);
+  rpc SetTimeouts(TimeoutsRequest) returns (google.protobuf.Empty);
+  rpc SetTask(TaskRequest) returns (google.protobuf.Empty);
+  rpc GetResult(google.protobuf.Empty) returns (TaskRespons);
+}
