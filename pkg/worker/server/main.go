@@ -3,10 +3,10 @@ package worker
 import (
 	"context"
 	"fmt"
-	"github.com/golang/protobuf/ptypes/empty"
 	"log"
 	"net"
 
+	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc"
 
 	"GoComputeFlow/pkg/worker"
@@ -22,22 +22,23 @@ func NewServer() *Server {
 }
 
 // StartGRPCServerWorker запускает gRPC-сервер
-func StartGRPCServerWorker(host, port string) error {
-	addr := fmt.Sprintf("%s%s", host, port)
-	listener, err := net.Listen("tcp", addr)
-	if err != nil {
-		return err
-	}
-	log.Printf("Start server gRPC worker on: %s%s", addr, port)
+func StartGRPCServerWorker(host, port string) {
+	go func() {
+		addr := fmt.Sprintf("%s%s", host, port)
+		listener, err := net.Listen("tcp", addr)
+		if err != nil {
+			log.Fatal("Error start listener gRPC worker: ", err)
+		}
+		log.Printf("Start server gRPC worker on: %s%s", addr, port)
 
-	grpcServer := grpc.NewServer()
-	myServiceDriver := NewServer()
-	pb.RegisterWorkerServiceServer(grpcServer, myServiceDriver)
-	if err := grpcServer.Serve(listener); err != nil {
-		log.Println("Error start server gRPC worker: ", err)
-		return err
-	}
-	return nil
+		grpcServer := grpc.NewServer()
+		myServiceDriver := NewServer()
+		pb.RegisterWorkerServiceServer(grpcServer, myServiceDriver)
+		if err := grpcServer.Serve(listener); err != nil {
+			log.Fatal("Error start server gRPC worker: ", err)
+		}
+		log.Printf("I`m stop?")
+	}()
 }
 
 // GetTimeouts возвращает таймауты вычислений в текстовом виде
