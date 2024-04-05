@@ -14,8 +14,8 @@ func CreateWorker() {
 	DataWorker = &Worker{
 		Count:           COUNTWORKERS,
 		CountFree:       COUNTWORKERSFREE,
-		Queue:           []TaskCalculate{},
-		ResultQueue:     []Result{},
+		Queue:           make([]TaskCalculate, 0),
+		ResultQueue:     make([]Result, 0),
 		taskChannel:     make(chan TaskCalculate),
 		AddTimeout:      ADDTIMEOUT,
 		SubtractTimeout: SUBTRACTTIMEOUT,
@@ -25,8 +25,8 @@ func CreateWorker() {
 	}
 	DataWorker.PingTimeoutCalc = make([]time.Time, DataWorker.Count)
 
-	RunWorkers()   // Запускаем вычислители
-	RunAllocator() // Распределитель вычислений
+	//RunWorkers()   // Запускаем вычислители
+	//RunAllocator() // Распределитель вычислений
 }
 
 // RunAllocator Запускает распределитель вычислений
