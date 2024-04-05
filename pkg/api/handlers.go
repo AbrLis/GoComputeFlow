@@ -96,7 +96,7 @@ func AddExpressionHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, gin.H{"msg": "Expression added to queue"})
+	c.JSON(200, gin.H{"msg": "Expression added to queue: " + string(bodyBytes)})
 }
 
 // GetExpressionsHandler обработчик для получения списка арифметических выражений пользователя
