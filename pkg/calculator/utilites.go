@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"strings"
 	"unicode"
+
+	pb "GoComputeFlow/pkg/worker/proto"
 )
 
 // ParseExpression разбивает выражение на токены в польской нотации
-func ParseExpression(expr string) ([]Token, error) {
-	var tokens []Token
+func ParseExpression(expr string) ([]*pb.Token, error) {
+	var tokens []*pb.Token
 	var ops []rune
 	var buffer string
 
@@ -17,11 +19,11 @@ func ParseExpression(expr string) ([]Token, error) {
 			buffer += string(ch)
 		} else if strings.ContainsRune("+-*/", ch) {
 			if buffer != "" {
-				tokens = append(tokens, Token{Value: buffer, IsOp: false})
+				tokens = append(tokens, &pb.Token{Value: buffer, IsOp: false})
 				buffer = ""
 			}
 			for len(ops) > 0 && precedence(ops[len(ops)-1]) >= precedence(ch) {
-				tokens = append(tokens, Token{Value: string(ops[len(ops)-1]), IsOp: true})
+				tokens = append(tokens, &pb.Token{Value: string(ops[len(ops)-1]), IsOp: true})
 				ops = ops[:len(ops)-1]
 			}
 			ops = append(ops, ch)
@@ -31,11 +33,11 @@ func ParseExpression(expr string) ([]Token, error) {
 	}
 
 	if buffer != "" {
-		tokens = append(tokens, Token{Value: buffer, IsOp: false})
+		tokens = append(tokens, &pb.Token{Value: buffer, IsOp: false})
 	}
 
 	for len(ops) > 0 {
-		tokens = append(tokens, Token{Value: string(ops[len(ops)-1]), IsOp: true})
+		tokens = append(tokens, &pb.Token{Value: string(ops[len(ops)-1]), IsOp: true})
 		ops = ops[:len(ops)-1]
 	}
 
