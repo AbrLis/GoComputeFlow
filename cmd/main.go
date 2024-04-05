@@ -1,12 +1,14 @@
 package main
 
 import (
+	"time"
+
 	"GoComputeFlow/pkg/api"
 	"GoComputeFlow/pkg/calculator"
 	"GoComputeFlow/pkg/database"
-	worker "GoComputeFlow/pkg/worker/server"
+	"GoComputeFlow/pkg/worker"
+	workerServer "GoComputeFlow/pkg/worker/server"
 	"log"
-	"time"
 )
 
 func main() {
@@ -14,11 +16,10 @@ func main() {
 		log.Fatal("Error opening database: ", err)
 	}
 
+	workerServer.StartGRPCServerWorker(calculator.GRPChost, calculator.GRPCport)
 	calculator.CreateCalculators()
-	api.StartServer(api.HostPath, api.PortHost)
+	worker.CreateWorker()
 
-	if err := worker.StartGRPCServerWorker("localhost", ":3001"); err != nil {
-		log.Fatal("Error start server gRPC worker: ", err)
-	}
+	api.StartServer(api.HostPath, api.PortHost)
 	time.Sleep(time.Hour)
 }
