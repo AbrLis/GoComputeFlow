@@ -3,6 +3,8 @@ package worker
 import (
 	"sync"
 	"time"
+
+	pb "GoComputeFlow/pkg/worker/proto"
 )
 
 // Константы таймаутов вычислений по умолчанию
@@ -18,31 +20,12 @@ const (
 	COUNTWORKERSFREE = 5
 )
 
-// TaskCalculate - структура для формирования задачи
-type TaskCalculate struct {
-	ID         uint    `json:"id"`
-	Expression []Token `json:"expression"`
-}
-
-// Token - структура для формирования польской нотации выражения
-type Token struct {
-	Value string
-	IsOp  bool
-}
-
-// Result - структура для очереди ответа
-type Result struct {
-	ID        uint
-	FlagError bool
-	Result    float64
-}
-
 type Worker struct {
 	Count           int
 	CountFree       int
-	Queue           []TaskCalculate
-	ResultQueue     []Result
-	taskChannel     chan TaskCalculate
+	Queue           []pb.TaskRequest
+	ResultQueue     []pb.TaskRespons
+	taskChannel     chan pb.TaskRequest
 	PingTimeoutCalc []time.Time
 	AddTimeout      time.Duration
 	SubtractTimeout time.Duration
