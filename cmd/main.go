@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"time"
 
 	"GoComputeFlow/pkg/api"
@@ -8,7 +9,6 @@ import (
 	"GoComputeFlow/pkg/database"
 	"GoComputeFlow/pkg/worker"
 	workerServer "GoComputeFlow/pkg/worker/server"
-	"log"
 )
 
 func main() {
