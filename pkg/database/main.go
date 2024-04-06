@@ -2,10 +2,13 @@ package database
 
 import (
 	"fmt"
+	"log"
+
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"log"
+
+	"GoComputeFlow/pkg/calculator"
 )
 
 var dbExpr *gorm.DB
@@ -75,7 +78,16 @@ func AddExprssion(userId uint, expression string) (uint, bool) {
 // SetTaskResult устанавливает результат выполнения задачи
 func SetTaskResult(userId, exprId int, status TaskStatus, result float32) {
 	var expression Expression
-	dbExpr.First(&expression, "user_id = ? AND id = ?", userId, exprId)
+	db := dbExpr.First(&expression, "user_id = ? AND id = ?", userId, exprId)
+	if db.Error != nil {
+		log.Println("Error getting expression: ", db.Error)
+		log.Println("User ID:", userId, "Expression ID:", exprId, "Expression:", expression)
+		// Повторная попытка поставить задачу в очередь
+		if ok := calculator.AddExpressionToQueue(expression.Expression, uint(userId)); !ok {
+			expression.Status = StatusError // не удалось, выставляю ошибку вычисления
+		}
+	}
+
 	expression.Status = status
 	if status == StatusCompleted {
 		expression.Result = fmt.Sprintf("%v", result)
@@ -88,21 +100,6 @@ func GetAllTasks(userId uint) ([]Expression, error) {
 	var expressions []Expression
 	dbExpr.Find(&expressions, "user_id = ?", userId)
 	return expressions, nil
-}
-
-// GetTaskStatus возвращает статус задачи определённого юзера в базе данных
-func GetTaskStatus(userId, exprId int) string {
-
-	var expression Expression
-	dbExpr.First(&expression, "user_id = ? AND id = ?", userId, exprId)
-	if expression.Status == StatusInProgress {
-		return "In progress"
-	} else if expression.Status == StatusCompleted {
-		return "Completed"
-	} else if expression.Status == StatusError {
-		return "Error"
-	}
-	return "Unknown"
 }
 
 // GetTask возвращает задачу по её идентификатору
