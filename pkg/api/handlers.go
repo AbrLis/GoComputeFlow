@@ -88,7 +88,7 @@ func AddExpressionHandler(c *gin.Context) {
 	// Отправка строки калькулятору
 	userId, ok := c.Get("user_id")
 	if !ok {
-		c.JSON(500, gin.H{"error": "invalid Token JWT"})
+		c.JSON(500, gin.H{"error": "invalid user_id in context"})
 		return
 	}
 	if ok := calculator.AddExpressionToQueue(string(bodyBytes), userId.(uint)); !ok {
@@ -121,7 +121,7 @@ func GetOperationsHandler(c *gin.Context) {
 	c.JSON(200, calculator.GetTimeoutsOperations())
 }
 
-// GetValueHandler возвращает конткретную задачу по ID
+// GetValueHandler возвращает конкретную задачу по ID
 func GetValueHandler(c *gin.Context) {
 	userId, ok := c.Get("user_id")
 	if !ok {
