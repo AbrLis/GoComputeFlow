@@ -1,7 +1,7 @@
 package worker
 
 import (
-	pb "GoComputeFlow/pkg/worker/proto"
+	pb "GoComputeFlow/internal/worker/proto"
 	"log"
 	"strconv"
 	"sync"

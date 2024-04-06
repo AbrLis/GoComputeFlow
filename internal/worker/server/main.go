@@ -3,15 +3,16 @@ package worker
 import (
 	"context"
 	"fmt"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"log"
 	"net"
 
-	"GoComputeFlow/pkg/worker"
-	pb "GoComputeFlow/pkg/worker/proto"
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
+	"GoComputeFlow/internal/worker"
+	pb "GoComputeFlow/internal/worker/proto"
 )
 
 type Server struct {

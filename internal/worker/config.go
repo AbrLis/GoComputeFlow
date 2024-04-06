@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	pb "GoComputeFlow/pkg/worker/proto"
+	pb "GoComputeFlow/internal/worker/proto"
 )
 
 // Константы таймаутов вычислений по умолчанию

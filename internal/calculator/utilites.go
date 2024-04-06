@@ -5,7 +5,7 @@ import (
 	"strings"
 	"unicode"
 
-	pb "GoComputeFlow/pkg/worker/proto"
+	pb "GoComputeFlow/internal/worker/proto"
 )
 
 // ParseExpression разбивает выражение на токены в польской нотации

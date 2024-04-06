@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"GoComputeFlow/pkg/database"
+	"GoComputeFlow/internal/database"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )

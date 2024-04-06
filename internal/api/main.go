@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"GoComputeFlow/pkg/api/auth"
+	"GoComputeFlow/internal/api/auth"
 )
 
 func StartServer(host, port string) {

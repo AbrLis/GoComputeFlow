@@ -4,11 +4,11 @@ import (
 	"log"
 	"time"
 
-	"GoComputeFlow/pkg/api"
-	"GoComputeFlow/pkg/calculator"
-	"GoComputeFlow/pkg/database"
-	"GoComputeFlow/pkg/worker"
-	workerServer "GoComputeFlow/pkg/worker/server"
+	"GoComputeFlow/internal/api"
+	"GoComputeFlow/internal/calculator"
+	"GoComputeFlow/internal/database"
+	"GoComputeFlow/internal/worker"
+	workerServer "GoComputeFlow/internal/worker/server"
 )
 
 func main() {

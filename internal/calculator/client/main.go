@@ -6,7 +6,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"log"
 
-	pb "GoComputeFlow/pkg/worker/proto"
+	pb "GoComputeFlow/internal/worker/proto"
 )
 
 func StartGPRCclient(host, port string) (pb.WorkerServiceClient, error) {

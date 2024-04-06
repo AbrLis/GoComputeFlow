@@ -7,8 +7,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-
-	"GoComputeFlow/pkg/calculator"
 )
 
 var dbExpr *gorm.DB
@@ -80,12 +78,10 @@ func SetTaskResult(userId, exprId int, status TaskStatus, result float32) {
 	var expression Expression
 	db := dbExpr.First(&expression, "user_id = ? AND id = ?", userId, exprId)
 	if db.Error != nil {
-		log.Println("Error getting expression: ", db.Error)
-		log.Println("User ID:", userId, "Expression ID:", exprId, "Expression:", expression)
-		// Повторная попытка поставить задачу в очередь
-		if ok := calculator.AddExpressionToQueue(expression.Expression, uint(userId)); !ok {
-			expression.Status = StatusError // не удалось, выставляю ошибку вычисления
-		}
+		log.Println("!!Error getting expression: ", db.Error)
+		log.Println("!!User ID:", userId, "Expression ID:", exprId, "Expression:", expression)
+		// Фатальная ошибка, возможно потеря вычислений, неверно передан параметр userId или exprId
+		return
 	}
 
 	expression.Status = status

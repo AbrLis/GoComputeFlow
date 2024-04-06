@@ -1,15 +1,15 @@
 package api
 
 import (
-	"GoComputeFlow/pkg/calculator"
+	"GoComputeFlow/internal/calculator"
 	"io"
 	"log"
 	"os"
 	"strconv"
 	"time"
 
-	"GoComputeFlow/pkg/api/auth"
-	"GoComputeFlow/pkg/database"
+	"GoComputeFlow/internal/api/auth"
+	"GoComputeFlow/internal/database"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )

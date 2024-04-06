@@ -8,9 +8,9 @@ import (
 
 	"github.com/golang/protobuf/ptypes/empty"
 
-	"GoComputeFlow/pkg/calculator/client"
-	"GoComputeFlow/pkg/database"
-	pb "GoComputeFlow/pkg/worker/proto"
+	"GoComputeFlow/internal/calculator/client"
+	"GoComputeFlow/internal/database"
+	pb "GoComputeFlow/internal/worker/proto"
 )
 
 var GrpcClient pb.WorkerServiceClient
