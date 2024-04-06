@@ -31,15 +31,17 @@ message Token {
 
 // Получение выражения для вычисления
 message TaskRequest {
-  int32 user_id = 1;
-  repeated Token expression = 2;
+  uint32 user_id = 1;
+  uint32 expression_id = 2;
+  repeated Token expression = 3;
 }
 
 // Ответ на задачу
 message TaskRespons{
-  int32 user_id = 1;
-  float value = 2;
-  bool flag_error = 3;
+  uint32 user_id = 1;
+  uint32 expression_id = 2;
+  float value = 3;
+  bool flag_error = 4;
 }
 
 
