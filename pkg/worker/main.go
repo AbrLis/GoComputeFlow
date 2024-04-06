@@ -1,6 +1,7 @@
 package worker
 
 import (
+	pb "GoComputeFlow/pkg/worker/proto"
 	"log"
 	"strconv"
 	"sync"
@@ -14,9 +15,9 @@ func CreateWorker() {
 	DataWorker = &Worker{
 		Count:           COUNTWORKERS,
 		CountFree:       COUNTWORKERSFREE,
-		Queue:           make([]TaskCalculate, 0),
-		ResultQueue:     make([]Result, 0),
-		taskChannel:     make(chan TaskCalculate),
+		Queue:           make([]pb.TaskRequest, 0),
+		ResultQueue:     make([]pb.TaskRespons, 0),
+		taskChannel:     make(chan pb.TaskRequest),
 		AddTimeout:      ADDTIMEOUT,
 		SubtractTimeout: SUBTRACTTIMEOUT,
 		MultiplyTimeout: MULTIPLYTIMEOUT,
@@ -25,8 +26,8 @@ func CreateWorker() {
 	}
 	DataWorker.PingTimeoutCalc = make([]time.Time, DataWorker.Count)
 
-	//RunWorkers()   // Запускаем вычислители
-	//RunAllocator() // Распределитель вычислений
+	RunWorkers()   // Запускаем вычислители
+	RunAllocator() // Распределитель вычислений
 }
 
 // RunAllocator Запускает распределитель вычислений
@@ -35,7 +36,7 @@ func RunAllocator() {
 		for {
 			if DataWorker.CountFree > 0 {
 				if len(DataWorker.Queue) == 0 {
-					log.Println("Задач в очереди нет, ожидание 2 секунды...")
+					// Задач в очереди нет, ожидание 2 секунды...
 					time.Sleep(2 * time.Second)
 					continue
 				}
@@ -65,21 +66,24 @@ func RunWorkers() {
 			for {
 				select {
 				case tokens := <-DataWorker.taskChannel:
-					log.Printf("Вычислитель %d - получил задачу: %d\n", calcId, tokens.ID)
+					log.Printf("Вычислитель %d - получил задачу: %d\n", calcId, tokens.UserId)
 					result, flagError := DataWorker.calculateValue(calcId, tokens.Expression)
 					DataWorker.Mu.Lock()
 					DataWorker.ResultQueue = append(
-						DataWorker.ResultQueue, Result{ID: tokens.ID, FlagError: flagError, Result: result},
+						DataWorker.ResultQueue,
+						pb.TaskRespons{
+							UserId: tokens.UserId, ExpressionId: tokens.ExpressionId, FlagError: flagError,
+							Value: float32(result),
+						},
 					)
 					DataWorker.Mu.Unlock()
-					log.Println("Вычислитель отправил результат в очередь результатов: ", tokens.ID)
+					log.Println("Вычислитель отправил результат в очередь результатов: ", tokens.UserId)
 
 					// Переход в режим ожидания
 					DataWorker.CountFree++
 					continue
 
 				case <-time.After(3 * time.Second): // Пингуемся записывая текущее время в PingTimeoutCalc
-					log.Println("Вычислитель пингуется: ", calcId)
 					DataWorker.Mu.Lock()
 					DataWorker.PingTimeoutCalc[calcId] = time.Now()
 					DataWorker.Mu.Unlock()
@@ -90,11 +94,10 @@ func RunWorkers() {
 }
 
 // calculateValue вычисляет значение выражения
-func (c *Worker) calculateValue(idCalc int, tokens []Token) (float64, bool) {
+func (c *Worker) calculateValue(idCalc int, tokens []*pb.Token) (float64, bool) {
 	var result float64
 	flagError := false // Признак ошибки при выполнении операции
 	if len(tokens) == 0 {
-		flagError = true
 		log.Println("Очередь задач пустая, вычисление невозможно")
 		flagError = true
 	} else {
