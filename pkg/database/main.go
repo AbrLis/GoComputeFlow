@@ -64,19 +64,22 @@ func GetUser(login string) (User, error) {
 	return user, nil
 }
 
-// AddExprssion добавляет задачу в базу данных
-func AddExprssion(userId uint, expression string) bool {
+// AddExprssion добавляет задачу в базу данных и возвращает её ID
+func AddExprssion(userId uint, expression string) (uint, bool) {
 	expr := Expression{UserId: userId, Expression: expression, Status: StatusInProgress}
 	dbExpr.Create(&expr)
 
-	return true
+	return expr.InfoModel.ID, true
 }
 
 // SetTaskResult устанавливает результат выполнения задачи
-func SetTaskResult(userId, exprId int, status TaskStatus) {
+func SetTaskResult(userId, exprId int, status TaskStatus, result float32) {
 	var expression Expression
 	dbExpr.First(&expression, "user_id = ? AND id = ?", userId, exprId)
 	expression.Status = status
+	if status == StatusCompleted {
+		expression.Result = fmt.Sprintf("%v", result)
+	}
 	dbExpr.Save(&expression)
 }
 
