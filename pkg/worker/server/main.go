@@ -3,14 +3,15 @@ package worker
 import (
 	"context"
 	"fmt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"log"
 	"net"
 
-	"github.com/golang/protobuf/ptypes/empty"
-	"google.golang.org/grpc"
-
 	"GoComputeFlow/pkg/worker"
 	pb "GoComputeFlow/pkg/worker/proto"
+	"github.com/golang/protobuf/ptypes/empty"
+	"google.golang.org/grpc"
 )
 
 type Server struct {
@@ -63,20 +64,15 @@ func (s *Server) SetTimeouts(_ context.Context, req *pb.TimeoutsRequest) (*empty
 
 // SetTask Добавляет задачу в очередь исполнения
 func (s *Server) SetTask(_ context.Context, req *pb.TaskRequest) (*empty.Empty, error) {
-	expression := make([]worker.Token, len(req.Expression))
-	for i, token := range req.Expression {
-		expression[i] = worker.Token{
-			Value: token.Value,
-			IsOp:  token.IsOp,
-		}
-	}
-
+	worker.DataWorker.Mu.Lock()
 	worker.DataWorker.Queue = append(
-		worker.DataWorker.Queue, worker.TaskCalculate{
-			ID:         uint(req.UserId),
-			Expression: expression,
+		worker.DataWorker.Queue, pb.TaskRequest{
+			UserId:       req.UserId,
+			ExpressionId: req.ExpressionId,
+			Expression:   req.Expression,
 		},
 	)
+	worker.DataWorker.Mu.Unlock()
 
 	return &empty.Empty{}, nil
 }
@@ -84,13 +80,13 @@ func (s *Server) SetTask(_ context.Context, req *pb.TaskRequest) (*empty.Empty, 
 // GetResult возвращает результат вычисления
 func (s *Server) GetResult(context.Context, *empty.Empty) (*pb.TaskRespons, error) {
 	if worker.DataWorker.ResultQueue == nil || len(worker.DataWorker.ResultQueue) == 0 {
-		return nil, fmt.Errorf("no results")
+		return nil, status.Error(codes.NotFound, "empty results")
 	}
-
+	//
 	worker.DataWorker.Mu.Lock()
 	data := worker.DataWorker.ResultQueue[0]
 	worker.DataWorker.ResultQueue = worker.DataWorker.ResultQueue[1:]
 	worker.DataWorker.Mu.Unlock()
 
-	return &pb.TaskRespons{UserId: int32(data.ID), Value: float32(data.Result), FlagError: data.FlagError}, nil
+	return &data, nil
 }
