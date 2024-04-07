@@ -3,6 +3,7 @@ package database
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/sqlite"
@@ -19,11 +20,23 @@ func OpenDB() error {
 		return err
 	}
 
-	err = dbExpr.AutoMigrate(&Expression{}, &User{})
+	err = dbExpr.AutoMigrate(
+		&Expression{},
+		&User{},
+		&Timeouts{},
+	)
 	if err != nil {
 		log.Println("Error migrating database: ", err)
 		return err
 	}
+
+	dafaultTimeouts := &Timeouts{
+		AddTimeout:      ADDTIMEOUT,
+		SubtractTimeout: SUBTRACTTIMEOUT,
+		MutiplyTimeout:  MULTIPLYTIMEOUT,
+		DivideTimeout:   DIVIDETIMEOUT,
+	}
+	dbExpr.FirstOrCreate(dafaultTimeouts)
 
 	return nil
 }
@@ -103,4 +116,23 @@ func GetTask(userId uint, exprId int) (Expression, error) {
 	var expression Expression
 	dbExpr.First(&expression, "user_id = ? AND id = ?", userId, exprId)
 	return expression, nil
+}
+
+// GetTimeouts возвращает таймауты вычислителя
+func GetTimeouts() Timeouts {
+	var timeouts Timeouts
+	dbExpr.First(&timeouts)
+	return timeouts
+}
+
+// SetTimeouts обновляет таймауты вычислителя
+func SetTimeouts(add, subtract, multiply, divide time.Duration) {
+	dbExpr.Model(&Timeouts{}).Where("id = ?", "1").Updates(
+		Timeouts{
+			AddTimeout:      add,
+			SubtractTimeout: subtract,
+			MutiplyTimeout:  multiply,
+			DivideTimeout:   divide,
+		},
+	)
 }
