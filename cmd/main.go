@@ -18,7 +18,10 @@ func main() {
 
 	workerServer.StartGRPCServerWorker(calculator.GRPChost, calculator.GRPCport)
 	calculator.CreateCalculators()
-	worker.CreateWorker()
+
+	// Установка таймаутов с прошлого запуска и создание воркеров
+	timeouts := database.GetTimeouts()
+	worker.CreateWorker(timeouts.AddTimeout, timeouts.SubtractTimeout, timeouts.MutiplyTimeout, timeouts.DivideTimeout)
 
 	api.StartServer(api.HostPath, api.PortHost)
 	time.Sleep(time.Hour)
