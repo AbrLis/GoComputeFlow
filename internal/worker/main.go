@@ -1,27 +1,28 @@
 package worker
 
 import (
-	pb "GoComputeFlow/internal/worker/proto"
 	"log"
 	"strconv"
 	"sync"
 	"time"
+
+	pb "GoComputeFlow/internal/worker/proto"
 )
 
 var DataWorker *Worker
 
 // CreateWorker создает новый экземпляр структуры вычислителя
-func CreateWorker() {
+func CreateWorker(add, sub, mult, div time.Duration) {
 	DataWorker = &Worker{
 		Count:           COUNTWORKERS,
 		CountFree:       COUNTWORKERSFREE,
 		Queue:           make([]pb.TaskRequest, 0),
 		ResultQueue:     make([]pb.TaskRespons, 0),
 		taskChannel:     make(chan pb.TaskRequest),
-		AddTimeout:      ADDTIMEOUT,
-		SubtractTimeout: SUBTRACTTIMEOUT,
-		MultiplyTimeout: MULTIPLYTIMEOUT,
-		DivideTimeout:   DIVIDETIMEOUT,
+		AddTimeout:      add,
+		SubtractTimeout: sub,
+		MultiplyTimeout: mult,
+		DivideTimeout:   div,
 		Mu:              sync.Mutex{},
 	}
 	DataWorker.PingTimeoutCalc = make([]time.Time, DataWorker.Count)
