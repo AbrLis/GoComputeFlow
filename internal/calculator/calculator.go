@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/ptypes/empty"
+	"google.golang.org/protobuf/types/known/durationpb"
 
 	"GoComputeFlow/internal/calculator/client"
 	"GoComputeFlow/internal/database"
@@ -101,4 +102,33 @@ func GetTimeoutsOperations() map[string]string {
 		"*": fmt.Sprintf("%s", timeouts.Multiply),
 		"/": fmt.Sprintf("%s", timeouts.Divide),
 	}
+}
+
+// SetTimeoutsOperations устанавливает время вычислений для каждой из операций
+func SetTimeoutsOperations(add, subtract, multiply, divide string) (string, error) {
+	timers := database.GetTimeouts()
+	parseAndSetTimeout(add, &timers.AddTimeout)
+	parseAndSetTimeout(subtract, &timers.SubtractTimeout)
+	parseAndSetTimeout(multiply, &timers.MutiplyTimeout)
+	parseAndSetTimeout(divide, &timers.DivideTimeout)
+
+	_, err := GrpcClient.SetTimeouts(
+		context.TODO(), &pb.TimeoutsRequest{
+			Add:      durationpb.New(timers.AddTimeout),
+			Subtract: durationpb.New(timers.SubtractTimeout),
+			Multiply: durationpb.New(timers.MutiplyTimeout),
+			Divide:   durationpb.New(timers.DivideTimeout),
+		},
+	)
+	if err != nil {
+		log.Println("Error set timeouts to grpc: ", err)
+		return "", err
+	}
+
+	// Установка новых занчений таймаутов в бд
+	database.SetTimeouts(timers.AddTimeout, timers.SubtractTimeout, timers.MutiplyTimeout, timers.DivideTimeout)
+	return fmt.Sprintf(
+		"Timeouts set: %s, %s, %s, %s", timers.AddTimeout, timers.SubtractTimeout, timers.MutiplyTimeout,
+		timers.DivideTimeout,
+	), nil
 }
