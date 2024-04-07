@@ -1,3 +1,4 @@
+### Регистрация
 POST http://localhost:3000/api/v1/register
 Content-Type: application/json
 
@@ -6,8 +7,7 @@ Content-Type: application/json
     "password": "admin"
 }
 
-###
-
+### Логин
 POST http://localhost:3000/api/v1/login
 Content-Type: application/json
 
@@ -16,22 +16,24 @@ Content-Type: application/json
     "password": "admin"
 }
 
-###
+### Получение списка всех выражений пользователя
 GET http://localhost:3000/api/v1/get-expressions
 Authorization: Bearer {{jwt}}
 
-###
+### Добавление выражений на вычисление
 POST http://localhost:3000/api/v1/add-expression
 Authorization: Bearer {{jwt}}
 Content-Type: text/plain
 
 2+2
 
-###
+### Получение значения по идентификатору
 GET http://localhost:3000/api/v1/get-value/2
 Authorization: Bearer {{jwt}}
 
-###
+### Получение времени выполнения операций
 GET http://localhost:3000/api/v1/get-operations
 
-###
+### Установка новых таймаутов
+POST http://localhost:3000/api/v1/set-operations?mul=1&add=2&sub=2.3&div=2.5
+Authorization: Bearer {{jwt}}
