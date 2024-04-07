@@ -1,17 +1,18 @@
 package api
 
 import (
-	"GoComputeFlow/internal/calculator"
 	"io"
 	"log"
 	"os"
 	"strconv"
 	"time"
 
-	"GoComputeFlow/internal/api/auth"
-	"GoComputeFlow/internal/database"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+
+	"GoComputeFlow/internal/api/auth"
+	"GoComputeFlow/internal/calculator"
+	"GoComputeFlow/internal/database"
 )
 
 var SECRETKEY = os.Getenv("SECRETKEY")
@@ -119,6 +120,20 @@ func GetExpressionsHandler(c *gin.Context) {
 // GetOperationsHandler обработчик для получения списка времени выполнения операций
 func GetOperationsHandler(c *gin.Context) {
 	c.JSON(200, calculator.GetTimeoutsOperations())
+}
+
+// SetOperationsHandler обработчик для установки времени выполнения операции
+func SetOperationsHandler(c *gin.Context) {
+	add := c.Query("add")
+	sub := c.Query("sub")
+	mul := c.Query("mul")
+	div := c.Query("div")
+
+	res, err := calculator.SetTimeoutsOperations(add, sub, mul, div)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+	}
+	c.JSON(200, res)
 }
 
 // GetValueHandler возвращает конкретную задачу по ID

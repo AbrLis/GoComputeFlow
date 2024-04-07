@@ -20,6 +20,7 @@ func StartServer(host, port string) {
 		apiRouters.GET(getExpressionsPath, auth.EnsureAuth(), GetExpressionsHandler)
 		apiRouters.GET(getValuePath, auth.EnsureAuth(), GetValueHandler)
 		apiRouters.GET(getOperationsPath, GetOperationsHandler)
+		apiRouters.POST(setOperationsPath, auth.EnsureAuth(), SetOperationsHandler)
 		//apiRouters.GET(monitoring, GetMonitoringHandler)
 	}
 
