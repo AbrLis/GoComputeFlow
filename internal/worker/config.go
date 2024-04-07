@@ -7,14 +7,6 @@ import (
 	pb "GoComputeFlow/internal/worker/proto"
 )
 
-// Константы таймаутов вычислений по умолчанию
-const (
-	ADDTIMEOUT      = 5 * time.Second
-	SUBTRACTTIMEOUT = 3 * time.Second
-	MULTIPLYTIMEOUT = 4 * time.Second
-	DIVIDETIMEOUT   = 6 * time.Second
-)
-
 const (
 	COUNTWORKERS     = 5
 	COUNTWORKERSFREE = 5
