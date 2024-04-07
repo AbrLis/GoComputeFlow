@@ -3,6 +3,7 @@ package calculator
 import (
 	"fmt"
 	"strings"
+	"time"
 	"unicode"
 
 	pb "GoComputeFlow/internal/worker/proto"
@@ -52,5 +53,12 @@ func precedence(op rune) int {
 		return 2
 	default:
 		return 0
+	}
+}
+
+func parseAndSetTimeout(timeout string, timer *time.Duration) {
+	duration, err := time.ParseDuration(timeout + "s")
+	if err == nil {
+		*timer = duration
 	}
 }
