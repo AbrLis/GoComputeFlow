@@ -46,10 +46,10 @@ func StartGRPCServerWorker(host, port string) {
 // GetTimeouts возвращает таймауты вычислений в текстовом виде
 func (s *Server) GetTimeouts(context.Context, *empty.Empty) (*pb.TimeoutsMessage, error) {
 	return &pb.TimeoutsMessage{
-		Add:      fmt.Sprintf("%.2f sec", worker.ADDTIMEOUT.Seconds()),
-		Subtract: fmt.Sprintf("%.2f sec", worker.SUBTRACTTIMEOUT.Seconds()),
-		Multiply: fmt.Sprintf("%.2f sec", worker.MULTIPLYTIMEOUT.Seconds()),
-		Divide:   fmt.Sprintf("%.2f sec", worker.DIVIDETIMEOUT.Seconds()),
+		Add:      fmt.Sprintf("%.2f sec", worker.DataWorker.AddTimeout.Seconds()),
+		Subtract: fmt.Sprintf("%.2f sec", worker.DataWorker.SubtractTimeout.Seconds()),
+		Multiply: fmt.Sprintf("%.2f sec", worker.DataWorker.MultiplyTimeout.Seconds()),
+		Divide:   fmt.Sprintf("%.2f sec", worker.DataWorker.DivideTimeout.Seconds()),
 	}, nil
 }
 
