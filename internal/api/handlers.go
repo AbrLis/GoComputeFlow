@@ -133,7 +133,7 @@ func SetOperationsHandler(c *gin.Context) {
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 	}
-	c.JSON(200, res)
+	c.JSON(200, map[string]string{"msg": res})
 }
 
 // GetValueHandler возвращает конкретную задачу по ID
