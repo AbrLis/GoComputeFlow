@@ -9,6 +9,7 @@ import (
 )
 
 func StartServer(host, port string) {
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
 	apiRouters := router.Group(apiVersion)
@@ -21,15 +22,13 @@ func StartServer(host, port string) {
 		apiRouters.GET(getValuePath, auth.EnsureAuth(), GetValueHandler)
 		apiRouters.GET(getOperationsPath, GetOperationsHandler)
 		apiRouters.POST(setOperationsPath, auth.EnsureAuth(), SetOperationsHandler)
-		//apiRouters.GET(monitoring, GetMonitoringHandler)
+		//apiRouters.GET(monitoringPath, GetMonitoringHandler)
 	}
 
 	log.Printf("Starting server on %s%s ", host, port)
-	go func() {
-		err := router.Run(host + port)
-		if err != nil {
-			log.Println("Error starting server: ", err)
-			panic(err)
-		}
-	}()
+	err := router.Run(host + port)
+	if err != nil {
+		log.Println("Error starting server: ", err)
+		panic(err)
+	}
 }
