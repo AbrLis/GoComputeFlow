@@ -15,7 +15,7 @@ type Error struct {
 func CheckUserExists(login, password string) (bool, Error) {
 	user, err := database.GetUser(login)
 	if err != nil {
-		return false, Error{Code: 500, Msg: gin.H{"error login db error": err.Error()}}
+		return false, Error{Code: 404, Msg: gin.H{"user not found": err.Error()}}
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(user.HashPassword), []byte(password))
 	if err != nil {
