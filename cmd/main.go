@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"time"
 
 	"GoComputeFlow/internal/api"
 	"GoComputeFlow/internal/calculator"
@@ -24,5 +23,4 @@ func main() {
 	worker.CreateWorker(timeouts.AddTimeout, timeouts.SubtractTimeout, timeouts.MutiplyTimeout, timeouts.DivideTimeout)
 
 	api.StartServer(api.HostPath, api.PortHost)
-	time.Sleep(time.Hour)
 }
