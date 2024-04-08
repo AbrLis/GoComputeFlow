@@ -3,18 +3,28 @@ package database
 import (
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var dbExpr *gorm.DB
 
 func OpenDB() error {
 	var err error
-	dbExpr, err = gorm.Open(sqlite.Open("database.db"), &gorm.Config{})
+	gormLogger := logger.New(
+		log.New(os.Stdout, "\r\n", log.LstdFlags),
+		logger.Config{
+			LogLevel:                  logger.Silent,
+			IgnoreRecordNotFoundError: true,
+		},
+	)
+
+	dbExpr, err = gorm.Open(sqlite.Open("database.db"), &gorm.Config{Logger: gormLogger})
 	if err != nil {
 		log.Println("Error opening database: ", err)
 		return err
@@ -74,7 +84,10 @@ func UserExists(login string) bool {
 // GetUser возвращает пользователя по его логину
 func GetUser(login string) (User, error) {
 	var user User
-	dbExpr.First(&user, "login = ?", login)
+	result := dbExpr.First(&user, "login = ?", login)
+	if result.Error != nil {
+		return user, result.Error
+	}
 	return user, nil
 }
 
