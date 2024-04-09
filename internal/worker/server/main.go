@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"time"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc"
@@ -90,4 +91,22 @@ func (s *Server) GetResult(context.Context, *empty.Empty) (*pb.TaskRespons, erro
 	worker.DataWorker.Mu.Unlock()
 
 	return &data, nil
+}
+
+// GetPing возвращает пинг воркеров
+func (s *Server) GetPing(context.Context, *empty.Empty) (*pb.PingResponse, error) {
+	worker.DataWorker.Mu.Lock()
+	defer worker.DataWorker.Mu.Unlock()
+
+	var ping *pb.PingMessage
+	var pingData []*pb.PingMessage
+
+	for i, v := range worker.DataWorker.PingTimeoutCalc {
+		name := fmt.Sprintf("worker %d", i)
+
+		ping = &pb.PingMessage{Name: name, Ping: fmt.Sprintf("%.2f sec", time.Since(v).Seconds())}
+		pingData = append(pingData, ping)
+	}
+
+	return &pb.PingResponse{Ping: pingData}, nil
 }

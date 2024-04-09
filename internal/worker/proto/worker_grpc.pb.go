@@ -27,6 +27,7 @@ type WorkerServiceClient interface {
 	SetTimeouts(ctx context.Context, in *TimeoutsRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	SetTask(ctx context.Context, in *TaskRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	GetResult(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*TaskRespons, error)
+	GetPing(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*PingResponse, error)
 }
 
 type workerServiceClient struct {
@@ -73,6 +74,15 @@ func (c *workerServiceClient) GetResult(ctx context.Context, in *empty.Empty, op
 	return out, nil
 }
 
+func (c *workerServiceClient) GetPing(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*PingResponse, error) {
+	out := new(PingResponse)
+	err := c.cc.Invoke(ctx, "/worker.WorkerService/GetPing", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WorkerServiceServer is the server API for WorkerService service.
 // All implementations must embed UnimplementedWorkerServiceServer
 // for forward compatibility
@@ -81,6 +91,7 @@ type WorkerServiceServer interface {
 	SetTimeouts(context.Context, *TimeoutsRequest) (*empty.Empty, error)
 	SetTask(context.Context, *TaskRequest) (*empty.Empty, error)
 	GetResult(context.Context, *empty.Empty) (*TaskRespons, error)
+	GetPing(context.Context, *empty.Empty) (*PingResponse, error)
 	mustEmbedUnimplementedWorkerServiceServer()
 }
 
@@ -99,6 +110,9 @@ func (UnimplementedWorkerServiceServer) SetTask(context.Context, *TaskRequest) (
 }
 func (UnimplementedWorkerServiceServer) GetResult(context.Context, *empty.Empty) (*TaskRespons, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetResult not implemented")
+}
+func (UnimplementedWorkerServiceServer) GetPing(context.Context, *empty.Empty) (*PingResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPing not implemented")
 }
 func (UnimplementedWorkerServiceServer) mustEmbedUnimplementedWorkerServiceServer() {}
 
@@ -185,6 +199,24 @@ func _WorkerService_GetResult_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _WorkerService_GetPing_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(empty.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WorkerServiceServer).GetPing(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/worker.WorkerService/GetPing",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WorkerServiceServer).GetPing(ctx, req.(*empty.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // WorkerService_ServiceDesc is the grpc.ServiceDesc for WorkerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -207,6 +239,10 @@ var WorkerService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetResult",
 			Handler:    _WorkerService_GetResult_Handler,
+		},
+		{
+			MethodName: "GetPing",
+			Handler:    _WorkerService_GetPing_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

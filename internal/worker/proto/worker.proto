@@ -6,6 +6,16 @@ import "google/protobuf/empty.proto";
 
 option go_package = "GoComputeFlow/pkg/worker/proto";
 
+// Соощение о пинге воркера
+message PingMessage {
+  string name = 1;
+  string ping = 2;
+}
+
+// Обобщённые пинге воркеров
+message PingResponse {
+  repeated PingMessage ping = 1;
+}
 
 // Ответ таймаутов вычислителей в текстовом виде
 message TimeoutsMessage {
@@ -51,4 +61,5 @@ service WorkerService {
   rpc SetTimeouts(TimeoutsRequest) returns (google.protobuf.Empty);
   rpc SetTask(TaskRequest) returns (google.protobuf.Empty);
   rpc GetResult(google.protobuf.Empty) returns (TaskRespons);
+  rpc GetPing(google.protobuf.Empty) returns (PingResponse);
 }
