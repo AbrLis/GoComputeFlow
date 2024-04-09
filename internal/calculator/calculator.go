@@ -132,3 +132,18 @@ func SetTimeoutsOperations(add, subtract, multiply, divide string) (string, erro
 		timers.DivideTimeout,
 	), nil
 }
+
+// GetWorkersTimeouts возвращает овтет воркеров о пингах воркеров
+func GetWorkersTimeouts() (map[string]string, error) {
+	pings, err := GrpcClient.GetPing(context.TODO(), new(empty.Empty))
+	if err != nil {
+		log.Println("Error get pings from grpc: ", err)
+		return nil, err
+	}
+
+	result := make(map[string]string, len(pings.Ping))
+	for _, v := range pings.Ping {
+		result[v.Name] = fmt.Sprintf("%s", v.Ping)
+	}
+	return result, nil
+}
