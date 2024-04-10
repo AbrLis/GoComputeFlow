@@ -8,7 +8,7 @@ const (
 	getOperationsPath  = "/get-operations"     // API для получения списка доступных операций со временем их выполнения
 	setOperationsPath  = "/set-operations"     // API для установки времени выполнения операции
 	monitoringPath     = "/monitoring"         // API для получения статуса вычислителей (времени последнего пинга)
-	HostPath           = "localhost"           // Путь до хоста
+	HostPath           = "0.0.0.0"             // Путь до хоста
 	PortHost           = ":3000"               // Порт хоста
 	registerPath       = "/register"           // API для регистрации пользователя
 	LoginPath          = "/login"              // API для входа пользователя
