@@ -149,3 +149,13 @@ func SetTimeouts(add, subtract, multiply, divide time.Duration) {
 		},
 	)
 }
+
+// GetAllUnfinishedTasks возвращает все незавершенные задачи из базы данных
+func GetAllUnfinishedTasks() ([]Expression, error) {
+	var expressions []Expression
+	result := dbExpr.Find(&expressions, "status = ?", StatusInProgress)
+	if result.Error != nil {
+		return expressions, result.Error
+	}
+	return expressions, nil
+}

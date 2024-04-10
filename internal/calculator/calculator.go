@@ -24,6 +24,16 @@ func CreateCalculators() {
 	}
 	GrpcClient = connect
 
+	// Проверка базы данных, остались ли незавершённые задачи после отключения сервера
+	data, err := database.GetAllUnfinishedTasks()
+	if err != nil {
+		log.Println("!!Error getting unfinished tasks: ", err)
+		return
+	}
+	for _, v := range data {
+		// Добавление незавершённых задач в очередь
+		_ = AddExpressionToQueue(v.Expression, v.UserId, false, v.ID)
+	}
 	// Запуск горутины что будет собирать выполненные задачи
 	runCollector()
 }
@@ -58,7 +68,7 @@ func runCollector() {
 }
 
 // AddExpressionToQueue добавляет выражение в очередь задач
-func AddExpressionToQueue(expression string, userId uint) bool {
+func AddExpressionToQueue(expression string, userId uint, newTask bool, expressionID uint) bool {
 	// Парсим выражение
 	tokens, err := ParseExpression(expression)
 	if err != nil {
@@ -66,10 +76,12 @@ func AddExpressionToQueue(expression string, userId uint) bool {
 		return false
 	}
 
-	// Добавляю задачу в список вычислений юзера в базу данных
-	expressionID, ok := database.AddExprssion(userId, expression)
-	if !ok {
-		return false
+	// Если задача новая, то добавляем её в список вычислений юзера
+	var ok bool
+	if newTask {
+		if expressionID, ok = database.AddExprssion(userId, expression); !ok {
+			return false
+		}
 	}
 
 	// Передача задачи вычислителю

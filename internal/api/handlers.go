@@ -92,7 +92,7 @@ func AddExpressionHandler(c *gin.Context) {
 		c.JSON(500, gin.H{"error": "invalid user_id in context"})
 		return
 	}
-	if ok := calculator.AddExpressionToQueue(string(bodyBytes), userId.(uint)); !ok {
+	if ok := calculator.AddExpressionToQueue(string(bodyBytes), userId.(uint), true, 0); !ok {
 		c.JSON(500, gin.H{"error": "Error parsing exprssion"})
 		return
 	}
