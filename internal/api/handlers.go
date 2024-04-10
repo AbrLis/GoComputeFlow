@@ -155,3 +155,13 @@ func GetValueHandler(c *gin.Context) {
 	}
 	c.JSON(200, result)
 }
+
+// GetMonitoringHandler возвращает мониторинг задач
+func GetMonitoringHandler(c *gin.Context) {
+	data, err := calculator.GetWorkersTimeouts()
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(200, data)
+}

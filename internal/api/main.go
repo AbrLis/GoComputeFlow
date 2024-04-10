@@ -22,7 +22,7 @@ func StartServer(host, port string) {
 		apiRouters.GET(getValuePath, auth.EnsureAuth(), GetValueHandler)
 		apiRouters.GET(getOperationsPath, GetOperationsHandler)
 		apiRouters.POST(setOperationsPath, auth.EnsureAuth(), SetOperationsHandler)
-		//apiRouters.GET(monitoringPath, GetMonitoringHandler)
+		apiRouters.GET(monitoringPath, GetMonitoringHandler)
 	}
 
 	log.Printf("Starting server on %s%s ", host, port)
