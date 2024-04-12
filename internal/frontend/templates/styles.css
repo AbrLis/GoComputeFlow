@@ -1,0 +1,10 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+span {
+    -webkit-user-select: none;  /* Chrome, Safari, Opera */
+    -moz-user-select: none;     /* Firefox */
+    -ms-user-select: none;      /* IE/Edge */
+    user-select: none;
+}
