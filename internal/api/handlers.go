@@ -17,14 +17,14 @@ import (
 
 var SECRETKEY = os.Getenv("SECRETKEY")
 
-type registerUserRequest struct {
+type RegisterUserRequest struct {
 	Login    string `json:"login"`
 	Password string `json:"password"`
 }
 
 // RegisterUser регистрация нового пользователя по логину и паролю
 func RegisterUser(c *gin.Context) {
-	var req registerUserRequest
+	var req RegisterUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(400, gin.H{"Необходимые поля для регистрации: login, password": err.Error()})
 		return
@@ -43,9 +43,13 @@ func RegisterUser(c *gin.Context) {
 
 // LoginUser получение токена по логину и паролю
 func LoginUser(c *gin.Context) {
-	var req registerUserRequest
+	var req RegisterUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(400, gin.H{"Необходимые поля для получения токена: login, password": err.Error()})
+		return
+	}
+	if len(req.Login) <= 3 || len(req.Password) <= 3 {
+		c.JSON(400, gin.H{"error": "length of username and password must be > 3"})
 		return
 	}
 
