@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"log"
 	"net/http"
 	"time"
 
@@ -19,18 +18,11 @@ type tokenJWT struct {
 }
 
 func render(c *gin.Context, templateName string, data gin.H) {
-	jwt, err := c.Cookie("jwt_key")
-	log.Println(jwt)
-	if err != nil {
-		// переходим на логин экран
-		c.Redirect(http.StatusFound, "/login")
-	}
-
-	// TODO: Запрос информации и её отображение
 	c.HTML(200, templateName, data)
 }
 
 func showIndexPage(c *gin.Context) {
+	// TODO: Запрос информации об операциях и её добавление в шаблон
 	render(c, "index.html", nil)
 }
 
@@ -56,13 +48,13 @@ func performLogin(c *gin.Context) {
 	}
 
 	// обращение к API регистрации
-	request, _ := http.NewRequest("POST", "http://localhost:3000/api/v1/register", bytes.NewReader(data))
+	request, _ := http.NewRequest("POST", APIPath+"/register", bytes.NewReader(data))
 	request.Header.Set("Content-Type", "application/json")
 	resp, err := http.DefaultClient.Do(request)
 	resp.Body.Close()
 
 	// обращение к API логина
-	request, _ = http.NewRequest("POST", "http://localhost:3000/api/v1/login", bytes.NewReader(data))
+	request, _ = http.NewRequest("POST", APIPath+"/login", bytes.NewReader(data))
 	request.Header.Set("Content-Type", "application/json")
 	resp, err = http.DefaultClient.Do(request)
 	if err != nil {
@@ -85,6 +77,7 @@ func performLogin(c *gin.Context) {
 
 	// Логин успешно пройден, установить куку и перейти на глвную
 	c.SetCookie("jwt_key", token.Token, int(time.Hour*24), "/", "", false, true)
+	c.Set("is_logged_in", true)
 	c.Redirect(302, "/")
 }
 
@@ -94,4 +87,10 @@ func errorLogin(c *gin.Context, errTitle string, err error) {
 		"ErrorTitle":   errTitle,
 		"ErrorMessage": err,
 	})
+}
+
+func logOut(c *gin.Context) {
+	c.SetCookie("jwt_key", "", -1, "/", "", false, true)
+	c.Set("is_logged_in", false)
+	c.Redirect(302, "/login")
 }
