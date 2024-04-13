@@ -5,18 +5,25 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
+            {{ if .is_logged_in }}
             <li class="nav-item active">
                 <a class="nav-link" href="/">Главная</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="#">Результаты</a>
             </li>
+            {{ end }}
             <li class="nav-item">
                 <a class="nav-link" href="#">Таймауты</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="#">Мониторинг</a>
             </li>
+            {{ if .is_logged_in }}
+            <li class="nav-item">
+                <a class="nav-link" href="/logout">Logout</a>
+            </li>
+            {{ end }}
         </ul>
     </div>
 </nav>
