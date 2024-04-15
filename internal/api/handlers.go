@@ -13,6 +13,7 @@ import (
 	"GoComputeFlow/internal/api/auth"
 	"GoComputeFlow/internal/calculator"
 	"GoComputeFlow/internal/database"
+	"GoComputeFlow/internal/models"
 )
 
 var SECRETKEY = os.Getenv("SECRETKEY")
@@ -112,11 +113,23 @@ func GetExpressionsHandler(c *gin.Context) {
 		return
 	}
 
-	expressions, err := database.GetAllTasks(userId.(uint))
-	if err != nil {
-		c.JSON(500, gin.H{"error": "Ошибка получения списка из базы данных"})
-		return
+	var (
+		expressions []models.Expression
+		err         error
+		limit       int
+	)
+
+	limitExpressions := c.Param("limit")
+	if limitExpressions == "" {
+		limit = DefaultCountExpressions
+	} else {
+		limit, err = strconv.Atoi(limitExpressions)
+		if err != nil {
+			c.JSON(500, gin.H{"error": "Неверное значение limit"})
+			return
+		}
 	}
+	expressions, _ = database.GetNTasks(userId.(uint), limit)
 
 	c.JSON(200, expressions)
 }
