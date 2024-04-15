@@ -4,16 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 
 	"GoComputeFlow/internal/api"
-	"GoComputeFlow/internal/database"
+	"GoComputeFlow/internal/models"
 )
 
 type tokenJWT struct {
@@ -25,22 +25,22 @@ func render(c *gin.Context, templateName string, data gin.H) {
 	c.HTML(200, templateName, data)
 }
 
+// showIndexPage отображает главную страницу
 func showIndexPage(c *gin.Context) {
-	// TODO: Запрос информации об операциях и её добавление в шаблон
-	userID, exist := c.Get("user_id")
-	userIDUint, err := strconv.ParseUint(userID.(string), 10, 64)
+	// Запрос информации об операциях и её добавление в шаблон
+	jwt, _ := c.Get("jwt_key")
+	header := fmt.Sprintf("Bearer %s", jwt.(string))
+	data, err := sendAPIRequest("/get-expressions/"+CountExpression, "GET", nil, header)
 	if err != nil {
-		log.Println("Ошибка преобразования user_id: ", err)
-		c.Redirect(http.StatusFound, "/login")
-		c.Abort()
+		log.Println("Error sendAPIRequest: ", err)
 	}
-	var data []database.Expression
-	if exist {
-		data, _ = database.GetNTasks(uint(userIDUint), 10)
-	}
+	var dataStruct []models.Expression
+	_ = json.Unmarshal(data, &dataStruct)
+
 	render(c, "index.html", gin.H{
-		"expressions":  data,
-		"is_logged_in": true,
+		"expressions":      dataStruct,
+		"is_logged_in":     true,
+		"count_expression": CountExpression,
 	})
 }
 
@@ -66,29 +66,17 @@ func performLogin(c *gin.Context) {
 	}
 
 	// обращение к API регистрации
-	request, _ := http.NewRequest("POST", APIPath+"/register", bytes.NewReader(data))
-	request.Header.Set("Content-Type", "application/json")
-	if resp, err := http.DefaultClient.Do(request); err == nil {
-		resp.Body.Close()
-	}
+	_, _ = sendAPIRequest("/register", "POST", bytes.NewReader(data), "")
 
 	// обращение к API логина
-	request, _ = http.NewRequest("POST", APIPath+"/login", bytes.NewReader(data))
-	request.Header.Set("Content-Type", "application/json")
-	resp, err := http.DefaultClient.Do(request)
+	resp, err := sendAPIRequest("/login", "POST", bytes.NewReader(data), "")
 	if err != nil {
 		errorLogin(c, "Error", err)
 		return
 	}
-	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		errorLogin(c, "Error", err)
-		return
-	}
 	var token tokenJWT
-	err = json.Unmarshal(body, &token)
+	err = json.Unmarshal(resp, &token)
 	if err != nil {
 		errorLogin(c, "Error", err)
 		return
@@ -101,12 +89,43 @@ func performLogin(c *gin.Context) {
 	c.Redirect(302, "/")
 }
 
+// sendAPIRequest вспомогательная функция запроса к API
+func sendAPIRequest(path string, method string, data *bytes.Reader, header string) ([]byte, error) {
+	var req *http.Request
+	var err error
+
+	if data != nil {
+		req, err = http.NewRequest(method, APIPath+path, data)
+	} else {
+		req, err = http.NewRequest(method, APIPath+path, nil)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	if header != "" {
+		req.Header.Set("Authorization", header)
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return body, nil
+}
+
 func errorLogin(c *gin.Context, errTitle string, err error) {
 
 	c.HTML(http.StatusBadRequest, "login.html", gin.H{
 		"ErrorTitle":   errTitle,
 		"ErrorMessage": err,
 	})
+	c.Abort()
 }
 
 func logOut(c *gin.Context) {
