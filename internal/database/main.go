@@ -124,6 +124,13 @@ func GetAllTasks(userId uint) ([]Expression, error) {
 	return expressions, nil
 }
 
+// GetNTasks возвращает N последних задач определённого юзера в базе данных
+func GetNTasks(userId uint, n int) ([]Expression, error) {
+	var expressions []Expression
+	dbExpr.Order("id desc").Limit(n).Find(&expressions, "user_id = ?", userId)
+	return expressions, nil
+}
+
 // GetTask возвращает задачу по её идентификатору
 func GetTask(userId uint, exprId int) (Expression, error) {
 	var expression Expression
