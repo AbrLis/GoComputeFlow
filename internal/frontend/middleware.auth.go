@@ -7,19 +7,17 @@ import (
 
 func loggedIn() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		loggedInInterface, _ := c.Get("is_logged_in")
-		loggedIn := loggedInInterface.(bool)
-		if !loggedIn {
-			c.Redirect(http.StatusFound, "/login")
+		setLoggedIn := func(key, value string) {
+			if val, err := c.Cookie(key); err == nil || val != "" {
+				c.Set(value, val)
+			} else {
+				c.Set("is_logged_in", false)
+				c.Redirect(http.StatusFound, "/login")
+				c.Abort()
+			}
 		}
-	}
-}
-func setUserStatus() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		if token, err := c.Cookie("jwt_key"); err == nil || token != "" {
-			c.Set("is_logged_in", true)
-		} else {
-			c.Set("is_logged_in", false)
-		}
+		setLoggedIn("jwt_key", "is_logged_in")
+		setLoggedIn("user_id", "user_id")
+		c.Set("is_logged_in", true)
 	}
 }
