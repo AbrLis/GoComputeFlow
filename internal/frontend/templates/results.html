@@ -1,0 +1,22 @@
+<div class="container">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Expression</th>
+            <th>Result</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{range .expressions}}
+        <tr>
+            <td>{{.InfoModel.ID}}</td>
+            <td>{{.Expression}}</td>
+            <td>{{.Result}}</td>
+            <td>{{.Status}}</td>
+        </tr>
+        {{end}}
+        </tbody>
+    </table>
+</div>
