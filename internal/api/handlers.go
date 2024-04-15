@@ -79,7 +79,7 @@ func LoginUser(c *gin.Context) {
 	}
 
 	log.Println("Успешно получен токен для пользователя", req.Login)
-	c.JSON(200, gin.H{"token": tokenString})
+	c.JSON(200, gin.H{"token": tokenString, "user_id": strconv.Itoa(msg.Code)})
 }
 
 // AddExpressionHandler обработчик для добавления арифметического выражения
