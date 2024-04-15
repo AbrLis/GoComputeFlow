@@ -1,10 +1,11 @@
 <div class="container">
-    <form>
+    <form class="form" action="/add-expression" method="POST">
         <div class="form-group">
             <label for="expressionInput">Введите выражение</label>
-            <input type="text" class="form-control" id="expressionInput" placeholder="Введите выражение">
-            <small id="expressionHelp" class="form-text text-muted">Поддерживаются операции +,-,*,/. Скобки и другие операции недоступны.</small>
+            <input type="text" class="form-control" id="expressionInput" name="expression" placeholder="выражение">
+            <small id="expressionHelp" class="form-text text-muted">Поддерживаются операции +,-,*,/. Скобки и другие
+                операции недоступны.</small>
         </div>
-        <button type="submit" class="btn btn-primary">Подтвердить</button>
+        <button type="submit" class="btn btn-primary">Отправить</button>
     </form>
 </div>
