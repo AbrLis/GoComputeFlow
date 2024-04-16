@@ -116,20 +116,31 @@ func GetExpressionsHandler(c *gin.Context) {
 	var (
 		expressions []models.Expression
 		err         error
-		limit       int
+		limit       = DefaultCountExpressions
+		page        = 1
 	)
 
-	limitExpressions := c.Param("limit")
-	if limitExpressions == "" {
-		limit = DefaultCountExpressions
-	} else {
+	limitExpressions := c.Query("limit")
+	if limitExpressions != "" {
 		limit, err = strconv.Atoi(limitExpressions)
 		if err != nil {
 			c.JSON(500, gin.H{"error": "Неверное значение limit"})
 			return
 		}
 	}
-	expressions, _ = database.GetNTasks(userId.(uint), limit)
+	pageExpressions := c.Query("page")
+	if pageExpressions != "" {
+		page, err = strconv.Atoi(pageExpressions)
+		if err != nil {
+			c.JSON(500, gin.H{"error": "Неверное значение page"})
+			return
+		}
+	}
+	expressions, err = database.GetNTasks(userId.(uint), limit, page)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
 
 	c.JSON(200, expressions)
 }
