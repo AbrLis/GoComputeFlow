@@ -9,6 +9,7 @@ var frontendRoute *gin.Engine
 
 func StartFront() {
 	frontendRoute = gin.Default()
+	frontendRoute.Static("/static", "internal/frontend/static/")
 	frontendRoute.LoadHTMLGlob("internal/frontend/templates/*")
 	initializeRoutes()
 	err := frontendRoute.Run(":8080")
