@@ -25,6 +25,27 @@ func render(c *gin.Context, templateName string, data gin.H) {
 	c.HTML(200, templateName, data)
 }
 
+// showMonitoring отображает пинги вычислителей
+func showMonitoring(c *gin.Context) {
+	var (
+		message string
+		result  map[string]string
+	)
+	resp, err := sendAPIRequest("/monitoring", "GET", nil, "")
+	if err != nil {
+		message = err.Error()
+	} else {
+		err = json.Unmarshal(resp, &result)
+		if err != nil {
+			message = err.Error()
+		}
+	}
+	render(c, "indexMonitoring.html", gin.H{
+		"monitoring":   result,
+		"errorMessage": message,
+	})
+}
+
 // showIndexPage отображает главную страницу
 func showIndexPage(c *gin.Context) {
 	// Запрос информации об операциях и её добавление в шаблон
