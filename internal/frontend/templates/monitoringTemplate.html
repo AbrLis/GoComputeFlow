@@ -1,0 +1,27 @@
+<div class="container mt-1">
+    {{ if .errorMessage }}
+    <p class="text-warning">{{.errorMessage}}></p>
+    {{ end }}
+    <h5 class="text-center">Таймауты вычислителей</h5>
+    <div class="d-flex justify-content-center mt-5">
+        <table class="table table-striped w-25">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Timeout</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{range $key, $value := .monitoring}}
+            <tr>
+                <td>{{$key}}</td>
+                <td>{{$value}}</td>
+            </tr>
+            {{end}}
+            </tbody>
+        </table>
+    </div>
+    <div class="d-flex justify-content-center mt-5">
+        <button class="btn btn-primary" type="button" onclick="window.location.href='/monitoring'">Обновить</button>
+    </div>
+</div>
