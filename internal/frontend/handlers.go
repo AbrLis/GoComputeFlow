@@ -51,7 +51,7 @@ func showIndexPage(c *gin.Context) {
 	// Запрос информации об операциях и её добавление в шаблон
 	jwt, _ := c.Get("jwt_key")
 	header := fmt.Sprintf("Bearer %s", jwt.(string))
-	data, err := sendAPIRequest("/get-expressions/"+CountExpression, "GET", nil, header)
+	data, err := sendAPIRequest(fmt.Sprintf("/get-expressions?limit=%s&page=1", CountExpression), "GET", nil, header)
 	if err != nil {
 		log.Println("Error sendAPIRequest: ", err)
 	}
