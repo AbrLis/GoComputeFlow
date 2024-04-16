@@ -19,7 +19,6 @@ func StartServer(host, port string) {
 
 		apiRouters.POST(addExpressionPath, auth.EnsureAuth(), AddExpressionHandler)
 		apiRouters.GET(getExpressionsPath, auth.EnsureAuth(), GetExpressionsHandler)
-		apiRouters.GET(getNExpressionsPath, auth.EnsureAuth(), GetExpressionsHandler)
 		apiRouters.GET(getValuePath, auth.EnsureAuth(), GetValueHandler)
 		apiRouters.GET(getOperationsPath, GetOperationsHandler)
 		apiRouters.POST(setOperationsPath, auth.EnsureAuth(), SetOperationsHandler)
