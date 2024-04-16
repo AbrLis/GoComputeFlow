@@ -119,18 +119,19 @@ func SetTaskResult(userId, exprId int, status models.TaskStatus, result float32)
 	dbExpr.Save(&expression)
 }
 
-// GetNTasks возвращает N последних задач определённого юзера в базе данных
-func GetNTasks(userId uint, n int) ([]models.Expression, error) {
+// GetNTasks возвращает limit задач на странице page
+func GetNTasks(userId uint, limit, page int) ([]models.Expression, error) {
 	var expressions []models.Expression
-	dbExpr.Order("id desc").Limit(n).Find(&expressions, "user_id = ?", userId)
-	return expressions, nil
+	offset := (page - 1) * limit
+	db := dbExpr.Order("id desc").Limit(limit).Offset(offset).Find(&expressions, "user_id = ?", userId)
+	return expressions, db.Error
 }
 
 // GetTask возвращает задачу по её идентификатору
 func GetTask(userId uint, exprId int) (models.Expression, error) {
 	var expression models.Expression
-	dbExpr.First(&expression, "user_id = ? AND id = ?", userId, exprId)
-	return expression, nil
+	db := dbExpr.First(&expression, "user_id = ? AND id = ?", userId, exprId)
+	return expression, db.Error
 }
 
 // GetTimeouts возвращает таймауты вычислителя
