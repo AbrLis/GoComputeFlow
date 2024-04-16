@@ -105,8 +105,8 @@ func performLogin(c *gin.Context) {
 
 	// Логин успешно пройден, установить куку и перейти на глвную
 
-	c.SetCookie("jwt_key", token.Token, int(time.Hour*24), "/", "", false, true)
-	c.SetCookie("user_id", token.UserID, int(time.Hour*24), "/", "", false, true)
+	c.SetCookie("jwt_key", token.Token, int((time.Hour * 20).Seconds()), "/", "", false, true)
+	c.SetCookie("user_id", token.UserID, int((time.Hour * 20).Seconds()), "/", "", false, true)
 	c.Redirect(302, "/")
 }
 
