@@ -37,11 +37,32 @@ func showIndexPage(c *gin.Context) {
 	var dataStruct []models.Expression
 	_ = json.Unmarshal(data, &dataStruct)
 
+	message, _ := c.Cookie("message")
 	render(c, "index.html", gin.H{
 		"expressions":      dataStruct,
 		"is_logged_in":     true,
 		"count_expression": CountExpression,
+		"message":          message,
 	})
+}
+
+// addExpression отправляет операцию на вычисления
+func addExpression(c *gin.Context) {
+	expression := c.PostForm("expression")
+	var message = "Epty expression"
+	if expression != "" {
+		jwt, _ := c.Get("jwt_key")
+		header := fmt.Sprintf("Bearer %s", jwt.(string))
+		resp, err := sendAPIRequest("/add-expression", "POST", bytes.NewReader([]byte(expression)), header)
+		if err != nil {
+			message = fmt.Sprintf("Error sendAPIRequest: %s, %s", err, string(resp))
+		} else {
+			message = string(resp)
+		}
+	}
+
+	c.SetCookie("message", message, 2, "/", "", false, true)
+	c.Redirect(302, "/")
 }
 
 func showLoginPage(c *gin.Context) {
