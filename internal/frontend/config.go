@@ -1,6 +1,8 @@
 package frontend
 
-import "errors"
+import (
+	"errors"
+)
 
 const (
 	APIPath         = "http://localhost:3000/api/v1"
@@ -8,3 +10,6 @@ const (
 )
 
 var errorsTimeout = errors.New("timeouts parsing error")
+var errorAPI = errors.New("API error")
+var errorUnauthorized = errors.New("errorUnauthorized")
+var timeLifeCookie = 2
