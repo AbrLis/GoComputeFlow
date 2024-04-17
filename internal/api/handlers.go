@@ -79,6 +79,13 @@ func LoginUser(c *gin.Context) {
 		return
 	}
 
+	// Добавим токен в бд
+	err = database.AddTokenToUser(uint(msg.Code), tokenString)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
 	log.Println("Успешно получен токен для пользователя", req.Login)
 	c.JSON(200, gin.H{"token": tokenString, "user_id": strconv.Itoa(msg.Code)})
 }
