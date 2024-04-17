@@ -137,8 +137,12 @@ func showIndexPage(c *gin.Context) {
 		log.Println("Error sendAPIRequest: ", err)
 		message = err.Error()
 	} else {
-		_ = json.Unmarshal(data, &dataStruct)
-		message, _ = c.Cookie("message")
+		err = json.Unmarshal(data, &dataStruct)
+		if err != nil {
+			message = err.Error()
+		} else {
+			message, _ = c.Cookie("message")
+		}
 	}
 
 	render(c, "index.html", gin.H{
