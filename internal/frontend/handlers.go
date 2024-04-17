@@ -104,7 +104,7 @@ func performChangeTimeouts(c *gin.Context) {
 	jwtKey, ok := c.Get("jwt_key")
 	if !ok {
 		log.Println("Error get jwt_key")
-		c.SetCookie("message", "Error get jwt_key", 3, "/", "", false, true)
+		c.SetCookie("message", "Error get jwt_key", timeLifeCookie, "/", "", false, true)
 		c.Redirect(http.StatusFound, "/changeTimeouts")
 		c.Abort()
 	}
@@ -113,7 +113,7 @@ func performChangeTimeouts(c *gin.Context) {
 	log.Println(string(resp))
 	if err != nil {
 		log.Println("Error sendAPIRequest: ", err)
-		c.SetCookie("message", err.Error(), 3, "/", "", false, true)
+		c.SetCookie("message", err.Error(), timeLifeCookie, "/", "", false, true)
 	}
 	c.Redirect(http.StatusFound, "/changeTimeouts")
 }
@@ -121,16 +121,26 @@ func performChangeTimeouts(c *gin.Context) {
 // showIndexPage отображает главную страницу
 func showIndexPage(c *gin.Context) {
 	// Запрос информации об операциях и её добавление в шаблон
+	var (
+		message    string
+		dataStruct []models.Expression
+	)
+
 	jwt, _ := c.Get("jwt_key")
 	header := fmt.Sprintf("Bearer %s", jwt.(string))
 	data, err := sendAPIRequest(fmt.Sprintf("/get-expressions?limit=%s&page=1", CountExpression), "GET", nil, header)
+	if errors.Is(err, errorUnauthorized) {
+		c.Redirect(http.StatusFound, "/login")
+		return
+	}
 	if err != nil {
 		log.Println("Error sendAPIRequest: ", err)
+		message = err.Error()
+	} else {
+		_ = json.Unmarshal(data, &dataStruct)
+		message, _ = c.Cookie("message")
 	}
-	var dataStruct []models.Expression
-	_ = json.Unmarshal(data, &dataStruct)
 
-	message, _ := c.Cookie("message")
 	render(c, "index.html", gin.H{
 		"expressions":      dataStruct,
 		"is_logged_in":     true,
@@ -142,7 +152,7 @@ func showIndexPage(c *gin.Context) {
 // addExpression отправляет операцию на вычисления
 func addExpression(c *gin.Context) {
 	expression := c.PostForm("expression")
-	var message = "Epty expression"
+	var message = "Empty expression"
 	if expression != "" {
 		jwt, _ := c.Get("jwt_key")
 		header := fmt.Sprintf("Bearer %s", jwt.(string))
@@ -154,7 +164,7 @@ func addExpression(c *gin.Context) {
 		}
 	}
 
-	c.SetCookie("message", message, 2, "/", "", false, true)
+	c.SetCookie("message", message, timeLifeCookie, "/", "", false, true)
 	c.Redirect(302, "/")
 }
 
