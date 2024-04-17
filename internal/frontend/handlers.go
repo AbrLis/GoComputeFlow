@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"time"
@@ -43,7 +42,80 @@ func showMonitoring(c *gin.Context) {
 	render(c, "indexMonitoring.html", gin.H{
 		"monitoring":   result,
 		"errorMessage": message,
+		"is_logged_in": true,
 	})
+}
+
+// showTimeoutsPage отображает страницу таймаутов операций
+func showTimeoutsPage(c *gin.Context) {
+	var (
+		errorMessage = ""
+		response     map[string]string
+	)
+	operations, err := sendAPIRequest("/get-operations", "GET", nil, "")
+	if err != nil {
+		showErrorTimeoutsPage(c, err.Error())
+		return
+	}
+	err = json.Unmarshal(operations, &response)
+	if err != nil {
+		showErrorTimeoutsPage(c, err.Error())
+		return
+	}
+
+	addTimout, err1 := parsingTimeOut(response["+"])
+	subTimout, err2 := parsingTimeOut(response["-"])
+	mulTimout, err3 := parsingTimeOut(response["*"])
+	divTimout, err4 := parsingTimeOut(response["/"])
+
+	if err1 != nil || err2 != nil || err3 != nil || err4 != nil {
+		showErrorTimeoutsPage(c, err.Error())
+		return
+	}
+
+	if message, _ := c.Cookie("message"); message != "" {
+		errorMessage += message
+	}
+	render(c, "indexChangeOperations.html", gin.H{
+		"is_logged_in": true,
+		"errorMessage": errorMessage,
+		"add":          addTimout,
+		"sub":          subTimout,
+		"mul":          mulTimout,
+		"div":          divTimout,
+	})
+}
+
+// showErrorTimeoutsPage отображает страницу ошибки
+func showErrorTimeoutsPage(c *gin.Context, message string) {
+	render(c, "indexChangeOperations.html", gin.H{
+		"is_logged_in": true,
+		"errorMessage": message,
+	})
+}
+
+// performChangeTimeouts изменяет таймауты операций - обработка формы
+func performChangeTimeouts(c *gin.Context) {
+	add := c.PostForm("add")
+	sub := c.PostForm("sub")
+	mul := c.PostForm("mul")
+	div := c.PostForm("div")
+	query := fmt.Sprintf("/set-operations?add=%s&sub=%s&mul=%s&div=%s", add, sub, mul, div)
+	jwtKey, ok := c.Get("jwt_key")
+	if !ok {
+		log.Println("Error get jwt_key")
+		c.SetCookie("message", "Error get jwt_key", 3, "/", "", false, true)
+		c.Redirect(http.StatusFound, "/changeTimeouts")
+		c.Abort()
+	}
+	header := fmt.Sprintf("Bearer %s", jwtKey)
+	resp, err := sendAPIRequest(query, "POST", nil, header)
+	log.Println(string(resp))
+	if err != nil {
+		log.Println("Error sendAPIRequest: ", err)
+		c.SetCookie("message", err.Error(), 3, "/", "", false, true)
+	}
+	c.Redirect(http.StatusFound, "/changeTimeouts")
 }
 
 // showIndexPage отображает главную страницу
@@ -129,36 +201,6 @@ func performLogin(c *gin.Context) {
 	c.SetCookie("jwt_key", token.Token, int((time.Hour * 20).Seconds()), "/", "", false, true)
 	c.SetCookie("user_id", token.UserID, int((time.Hour * 20).Seconds()), "/", "", false, true)
 	c.Redirect(302, "/")
-}
-
-// sendAPIRequest вспомогательная функция запроса к API
-func sendAPIRequest(path string, method string, data *bytes.Reader, header string) ([]byte, error) {
-	var req *http.Request
-	var err error
-
-	if data != nil {
-		req, err = http.NewRequest(method, APIPath+path, data)
-	} else {
-		req, err = http.NewRequest(method, APIPath+path, nil)
-	}
-
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	if header != "" {
-		req.Header.Set("Authorization", header)
-	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	return body, nil
 }
 
 func errorLogin(c *gin.Context, errTitle string, err error) {
