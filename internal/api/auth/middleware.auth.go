@@ -34,15 +34,8 @@ func EnsureAuth() gin.HandlerFunc {
 			},
 		)
 
-		if err != nil {
-			c.JSON(401, gin.H{"message": "Unauthorized: " + err.Error()})
-			c.Abort()
-			return
-		}
-
-		// Проверка в бд
-		if !database.TokenExists(tokenJWT) {
-			c.JSON(401, gin.H{"message": "Unauthorized: "})
+		if err != nil || !database.TokenExists(tokenJWT) {
+			c.JSON(401, gin.H{"message": "Unauthorized: invalid token"})
 			c.Abort()
 			return
 		}
@@ -51,20 +44,13 @@ func EnsureAuth() gin.HandlerFunc {
 		if claims, ok := tokenFromString.Claims.(jwt.MapClaims); ok && tokenFromString.Valid {
 			if userId, ok := claims["user_id"]; ok {
 				temp, ok := userId.(float64)
-				if !ok {
-					c.JSON(500, gin.H{"error": "Не удалось преобразовать ID пользователя"})
-					c.Abort()
+				if ok {
+					c.Set("user_id", uint(temp))
 					return
 				}
-				c.Set("user_id", uint(temp))
-			} else {
-				c.JSON(500, gin.H{"error": "Не найден ID пользователя в токене"})
-				c.Abort()
 			}
-		} else {
-			c.JSON(500, gin.H{"error": "Ошибка обработки jwt токена"})
-			c.Abort()
-			return
 		}
+		c.JSON(500, gin.H{"error": "Ошибка обработки jwt токена"})
+		c.Abort()
 	}
 }
