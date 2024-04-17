@@ -6,6 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+
+	"GoComputeFlow/internal/database"
 )
 
 var SECRETKEY = os.Getenv("SECRETKEY")
@@ -34,6 +36,13 @@ func EnsureAuth() gin.HandlerFunc {
 
 		if err != nil {
 			c.JSON(401, gin.H{"message": "Unauthorized: " + err.Error()})
+			c.Abort()
+			return
+		}
+
+		// Проверка в бд
+		if !database.TokenExists(tokenJWT) {
+			c.JSON(401, gin.H{"message": "Unauthorized: "})
 			c.Abort()
 			return
 		}
