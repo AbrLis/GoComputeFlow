@@ -5,8 +5,9 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - data-volume:/root/
+      - data-volume:/root/internal/database/
     ports:
       - "3000:3000"
+      - "8080:8080"
 volumes:
   data-volume:
