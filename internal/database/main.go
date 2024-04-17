@@ -26,7 +26,7 @@ func OpenDB() error {
 		},
 	)
 
-	dbExpr, err = gorm.Open(sqlite.Open("database.db"), &gorm.Config{Logger: gormLogger})
+	dbExpr, err = gorm.Open(sqlite.Open("internal/database/database.db"), &gorm.Config{Logger: gormLogger})
 	if err != nil {
 		log.Println("Error opening database: ", err)
 		return err
@@ -76,11 +76,23 @@ func CreateNewUser(login, password string) (int, error) {
 	return int(user.ID), nil
 }
 
+// AddTokenToUser добавляет токен в базу данных
+func AddTokenToUser(id uint, token string) error {
+	result := dbExpr.Model(&models.User{}).Where("id = ?", id).Update("token", token)
+	return result.Error
+}
+
 // UserExists проверяет, существует ли пользователь с указанным логином в базе данных
 func UserExists(login string) bool {
 	var user models.User
 	dbExpr.First(&user, "login = ?", login)
 	return user.ID != 0
+}
+
+// TokenExists проверяет, существует ли пользователь с указанным токеном в базе данных
+func TokenExists(token string) bool {
+	res := dbExpr.First(&models.User{}, "token = ?", token)
+	return res.Error == nil
 }
 
 // GetUser возвращает пользователя по его логину
