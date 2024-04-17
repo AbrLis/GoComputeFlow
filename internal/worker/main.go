@@ -146,6 +146,9 @@ func (c *Worker) calculateValue(idCalc int, tokens []*pb.Token) (float64, bool) 
 					break
 				}
 
+				if flagError {
+					break
+				}
 				// После кажого вычисления отправка пинга что вычислитель жив
 				c.Mu.Lock()
 				c.PingTimeoutCalc[idCalc] = time.Now()
@@ -155,6 +158,10 @@ func (c *Worker) calculateValue(idCalc int, tokens []*pb.Token) (float64, bool) 
 		if len(stack) != 1 {
 			log.Println("Слишком много чисел в стеке, ошибка в вычислителе")
 			flagError = true
+		}
+
+		if flagError {
+			return 0, flagError
 		}
 		result = stack[0]
 	}
