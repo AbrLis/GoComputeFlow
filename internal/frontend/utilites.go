@@ -32,6 +32,12 @@ func sendAPIRequest(path string, method string, data *bytes.Reader, header strin
 		return nil, err
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode == 401 {
+		return nil, errorUnauthorized
+	}
+	if resp.StatusCode != 200 {
+		return nil, errorAPI
+	}
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
