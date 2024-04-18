@@ -21,3 +21,23 @@
         </tbody>
     </table>
 </div>
+
+<div class="container d-flex justify-content-center">
+    <nav aria-label="Page navigation example">
+        <ul class="pagination">
+            {{ if .isPrevious }}
+            <li class="page-item"><a class="page-link" href="/?page={{ add .myPage -1 }}">Предыдущая</a></li>
+            {{ else }}
+            <li class="page-item disabled"><a class="page-link" href="#">Предыдущая</a></li>
+            {{ end }}
+            <li class="page-item active" aria-current="page">
+                <a class="page-link" href="/?page={{ .myPage }}">{{ .myPage }}</a>
+            </li>
+            {{ if .isNext }}
+            <li class="page-item"><a class="page-link" href="/?page={{ add .myPage 1 }}">Следующая</a></li>
+            {{ else }}
+            <li class="page-item disabled"><a class="page-link" href="#">Следующая</a></li>
+            {{ end }}
+        </ul>
+    </nav>
+</div>
