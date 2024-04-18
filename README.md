@@ -54,7 +54,9 @@ go mod download
 ```shell
 go run ./cmd/main.go
 ```
-Проект запустится по адресу `http://localhost:3000`
+API проекта будет доступно по адресу `http://localhost:3000`
+
+Фронтенд проекта будет доступен по адресу `http://localhost:8080`
 
 [Назад к оглавлению](#оглавление)
 
@@ -66,7 +68,9 @@ go run ./cmd/main.go
 ```shell
 docker-compose up
 ```
-Севис будет доступен по по адресу `http://localhost:3000`
+API проекта будет доступно по адресу `http://localhost:3000`
+
+Фронтенд проекта будет доступен по адресу `http://localhost:8080`
 
 [Назад к оглавлению](#оглавление)
 
@@ -116,7 +120,8 @@ curl -X POST http://localhost:3000/api/v1/login \
 В ответ получаем JSON ответ с токеном JWT
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTI2NDIxNjksImlhdCI6MTcxMjU1NTc2OSwibG9naW4iOiJhZG1pbiIsIm5iZiI6MTcxMjU1NTc2OSwidXNlcl9pZCI6MX0.dYVKp5H8MY3zaV988hSk_YNEsrS_Kac0tRwpxWhVUdc"
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTM1MTkzNDEsImlhdCI6MTcxMzQzMjk0MSwibG9naW4iOiJhZG1pbiIsIm5iZiI6MTcxMzQzMjk0MSwidXNlcl9pZCI6MX0.mOulsN0EZojqUPGGQ9_ONK4nGYiYlQQ_-CIyODUGG60",
+  "user_id": "1"
 }
 ```
 [Назад к оглавлению](#оглавление)
@@ -146,7 +151,8 @@ curl -X GET http://localhost:3000/api/v1/get-expressions \
 -H 'Authorization: Bearer {{jwt}}'
 ```
 Здесь вместо {{jwt}} должен быть вставлен выданный токен JWT
-В ответ получаем JSON список выражений
+В ответ получаем JSON список выражений (по умолчанию 100 последних)
+
 ```json
 [
   {
@@ -157,6 +163,15 @@ curl -X GET http://localhost:3000/api/v1/get-expressions \
   }
 ]
 ```
+
+Доступен не обязательный запрос с пагинацией где: 
+
+`page` - номер страницы, `limit` - количество выражений на странице
+```shell
+curl -X GET http://localhost:3000/api/v1/get-expressions?page=1&limit=10 \
+-H 'Authorization: Bearer {{jwt}}'
+```
+
 [Назад к оглавлению](#оглавление)
 
 ---
@@ -227,10 +242,12 @@ curl -X GET http://localhost:3000/api/v1/monitoring
 
 ---
 ## Описание структуры проекта в целом
-![Схема проекта](./images/Schema.jpg)
+[Схема проекта](https://miro.com/welcomeonboard/Z1JJeWtWZmh0Zmk1T3VlSG9JQ29EczhCMmo1cVhxNGRTRFM3TDhDZDAxWUhvcUJoMFFHWTlWN3ZxaTFPa2Q1SXwzNDU4NzY0NTMxMTc0NTI2MTQwfDI=?share_link_id=118493269374)
+![](./images/Schema.jpg)
 
 ### Общее описание структуры
 
+- Frontend - Web-приложение
 - API Взаимодействие с пользователем (регистрация, аутентификация, получение выражений)
 - Calulator - Распределитель задач и хаб взаимодействия между базой данных и Worker-оми
 - Database - База данных, для хранения данных о пользователях и сохранения таймаутов вычислений, результатов выполнения операций.
@@ -244,7 +261,7 @@ curl -X GET http://localhost:3000/api/v1/monitoring
 - [Go](https://go.dev/) - изучаемый язык.
 - [Sqlite](https://www.sqlite.org/) - база данных. Для данного проека используется SQLite. Другие базы данных, для такого проекта, считаю излишними.
 - [Gorm](https://gorm.io/) - ORM. Первое использование, было интересно попробовать и разобраться как с ним работать.
-- [Gin](https://gin-gonic.com/) - маршрутизатор. Опять-же, это первое использоание этого пакета. (В целом считаю его излишним, но было интересно попробовать, поэтому выбрал его)
+- [Gin](https://gin-gonic.com/) - маршрутизатор. Опять-же, это первое использоание этого пакета.
 - [JWT](https://github.com/golang-jwt/jwt) - для авторизации и аутентификации пользователей.
 
 [Назад к оглавлению](#оглавление)
