@@ -20,6 +20,8 @@ type tokenJWT struct {
 	UserID string `json:"user_id"`
 }
 
+var indexPage = 1 // Текущая страница
+
 func render(c *gin.Context, templateName string, data gin.H) {
 	c.HTML(200, templateName, data)
 }
@@ -124,11 +126,16 @@ func showIndexPage(c *gin.Context) {
 	var (
 		message    string
 		dataStruct []models.Expression
+		offset     = 0
 	)
 
+	checkPaginate(c)
+	if indexPage > 1 {
+		offset = (indexPage - 1) * (CountExpression - 1)
+	}
 	jwt, _ := c.Get("jwt_key")
 	header := fmt.Sprintf("Bearer %s", jwt.(string))
-	data, err := sendAPIRequest(fmt.Sprintf("/get-expressions?limit=%s&page=1", CountExpression), "GET", nil, header)
+	data, err := sendAPIRequest(fmt.Sprintf("/get-expressions?limit=%d&page=%d&offset=%d", CountExpression, indexPage, offset), "GET", nil, header)
 	if errors.Is(err, errorUnauthorized) {
 		c.Redirect(http.StatusFound, "/login")
 		return
@@ -145,11 +152,20 @@ func showIndexPage(c *gin.Context) {
 		}
 	}
 
+	isNext := false
+	if len(dataStruct) == CountExpression {
+		dataStruct = dataStruct[:CountExpression-1]
+		isNext = true
+	}
+
 	render(c, "index.html", gin.H{
 		"expressions":      dataStruct,
 		"is_logged_in":     true,
-		"count_expression": CountExpression,
+		"count_expression": CountExpression - 1,
 		"message":          message,
+		"isNext":           isNext,
+		"isPrevious":       indexPage > 1,
+		"myPage":           indexPage,
 	})
 }
 
