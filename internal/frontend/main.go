@@ -1,15 +1,17 @@
 package frontend
 
 import (
-	"github.com/gin-gonic/gin"
 	"html/template"
 	"log"
+
+	"github.com/gin-gonic/gin"
 )
 
 var frontendRoute *gin.Engine
 
 func StartFront() {
 	frontendRoute = gin.Default()
+	// Настройка темплейтов
 	html := template.New("").Funcs(template.FuncMap{
 		"add": add,
 	})
@@ -18,9 +20,11 @@ func StartFront() {
 		log.Fatalf("Failed to parse templates: %v", err)
 	}
 	frontendRoute.SetHTMLTemplate(html)
-
+	// Установка статики
 	frontendRoute.Static("/static", "internal/frontend/static/")
+	// Установка маршрутов
 	initializeRoutes()
+	// Запуск сервера
 	err = frontendRoute.Run(":8080")
 	log.Println("Frontend server started on port 8080")
 	if err != nil {
