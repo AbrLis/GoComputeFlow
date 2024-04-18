@@ -131,10 +131,9 @@ func SetTaskResult(userId, exprId int, status models.TaskStatus, result float32)
 	dbExpr.Save(&expression)
 }
 
-// GetNTasks возвращает limit задач на странице page
-func GetNTasks(userId uint, limit, page int) ([]models.Expression, error) {
+// GetNTasks возвращает limit задач c приращением offset
+func GetNTasks(userId uint, limit, offset int) ([]models.Expression, error) {
 	var expressions []models.Expression
-	offset := (page - 1) * limit
 	db := dbExpr.Order("id desc").Limit(limit).Offset(offset).Find(&expressions, "user_id = ?", userId)
 	return expressions, db.Error
 }
