@@ -3,6 +3,7 @@ package api
 import (
 	"io"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 	"time"
@@ -27,18 +28,18 @@ type RegisterUserRequest struct {
 func RegisterUser(c *gin.Context) {
 	var req RegisterUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(400, gin.H{"Необходимые поля для регистрации: login, password": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"Необходимые поля для регистрации: login, password": err.Error()})
 		return
 	}
 
 	id, err := database.CreateNewUser(req.Login, req.Password)
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	log.Println("Успешно зарегистрирован пользователь с ID", id)
-	c.JSON(200, gin.H{"msg": "Пользователь с логином " + req.Login + " успешно зарегистрирован"})
+	c.JSON(http.StatusOK, gin.H{"msg": "Пользователь с логином " + req.Login + " успешно зарегистрирован"})
 
 }
 
@@ -46,11 +47,11 @@ func RegisterUser(c *gin.Context) {
 func LoginUser(c *gin.Context) {
 	var req RegisterUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(400, gin.H{"Необходимые поля для получения токена: login, password": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"Необходимые поля для получения токена: login, password": err.Error()})
 		return
 	}
 	if len(req.Login) <= 3 || len(req.Password) <= 3 {
-		c.JSON(400, gin.H{"error": "length of username and password must be > 3"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "length of username and password must be > 3"})
 		return
 	}
 
@@ -75,48 +76,48 @@ func LoginUser(c *gin.Context) {
 
 	tokenString, err := token.SignedString([]byte(SECRETKEY))
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	// Добавим токен в бд
 	err = database.AddTokenToUser(uint(msg.Code), tokenString)
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	log.Println("Успешно получен токен для пользователя", req.Login)
-	c.JSON(200, gin.H{"token": tokenString, "user_id": strconv.Itoa(msg.Code)})
+	c.JSON(http.StatusOK, gin.H{"token": tokenString, "user_id": strconv.Itoa(msg.Code)})
 }
 
 // AddExpressionHandler обработчик для добавления арифметического выражения
 func AddExpressionHandler(c *gin.Context) {
 	bodyBytes, err := io.ReadAll(c.Request.Body)
 	if err != nil || len(bodyBytes) == 0 {
-		c.JSON(500, gin.H{"error": "Empty body or error reading body"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Empty body or error reading body"})
 		return
 	}
 
 	// Отправка строки калькулятору
 	userId, ok := c.Get("user_id")
 	if !ok {
-		c.JSON(500, gin.H{"error": "invalid user_id in context"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user_id in context"})
 		return
 	}
 	if ok := calculator.AddExpressionToQueue(string(bodyBytes), userId.(uint), true, 0); !ok {
-		c.JSON(500, gin.H{"error": "Error parsing exprssion"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error parsing exprssion"})
 		return
 	}
 
-	c.JSON(200, gin.H{"msg": "Expression added to queue: " + string(bodyBytes)})
+	c.JSON(http.StatusOK, gin.H{"msg": "Expression added to queue: " + string(bodyBytes)})
 }
 
 // GetExpressionsHandler обработчик для получения списка арифметических выражений пользователя
 func GetExpressionsHandler(c *gin.Context) {
 	userId, ok := c.Get("user_id")
 	if !ok {
-		c.JSON(500, gin.H{"error": "invalid userID"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid userID"})
 		return
 	}
 
@@ -127,34 +128,30 @@ func GetExpressionsHandler(c *gin.Context) {
 		page        = 1
 	)
 
-	limitExpressions := c.Query("limit")
-	if limitExpressions != "" {
-		limit, err = strconv.Atoi(limitExpressions)
-		if err != nil {
-			c.JSON(500, gin.H{"error": "Неверное значение limit"})
-			return
-		}
-	}
-	pageExpressions := c.Query("page")
-	if pageExpressions != "" {
-		page, err = strconv.Atoi(pageExpressions)
-		if err != nil {
-			c.JSON(500, gin.H{"error": "Неверное значение page"})
-			return
-		}
-	}
-	expressions, err = database.GetNTasks(userId.(uint), limit, page)
+	limit, err = getQueryParameter(c, "limit", limit)
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Неверное значение limit"})
+		return
+	}
+	page, err = getQueryParameter(c, "page", page)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Неверное значение page"})
+		return
+	}
+	offset, _ := getQueryParameter(c, "offset", (page-1)*limit)
+
+	expressions, err = database.GetNTasks(userId.(uint), limit, offset)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(200, expressions)
+	c.JSON(http.StatusOK, expressions)
 }
 
 // GetOperationsHandler обработчик для получения списка времени выполнения операций
 func GetOperationsHandler(c *gin.Context) {
-	c.JSON(200, calculator.GetTimeoutsOperations())
+	c.JSON(http.StatusOK, calculator.GetTimeoutsOperations())
 }
 
 // SetOperationsHandler обработчик для установки времени выполнения операции
@@ -166,7 +163,7 @@ func SetOperationsHandler(c *gin.Context) {
 
 	res, err := calculator.SetTimeoutsOperations(add, sub, mul, div)
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 	c.JSON(200, map[string]string{"msg": res})
 }
@@ -175,28 +172,28 @@ func SetOperationsHandler(c *gin.Context) {
 func GetValueHandler(c *gin.Context) {
 	userId, ok := c.Get("user_id")
 	if !ok {
-		c.JSON(500, gin.H{"error": "invalid userID"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid userID"})
 		return
 	}
 	taskID, err := strconv.Atoi(c.Param("task_id"))
 	if err != nil {
-		c.JSON(400, gin.H{"error": "invalid taskID"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid taskID"})
 		return
 	}
 	result, _ := database.GetTask(userId.(uint), taskID)
 	if result.UserId == 0 {
-		c.JSON(404, gin.H{"error": "task not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "task not found"})
 		return
 	}
-	c.JSON(200, result)
+	c.JSON(http.StatusOK, result)
 }
 
 // GetMonitoringHandler возвращает мониторинг задач
 func GetMonitoringHandler(c *gin.Context) {
 	data, err := calculator.GetWorkersTimeouts()
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(200, data)
+	c.JSON(http.StatusOK, data)
 }
