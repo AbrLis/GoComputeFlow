@@ -2,6 +2,7 @@ package frontend
 
 import (
 	"bytes"
+	"github.com/gin-gonic/gin"
 	"io"
 	"log"
 	"net/http"
@@ -57,4 +58,23 @@ func parsingTimeOut(timeout string) (float32, error) {
 		return 0, errorsTimeout
 	}
 	return float32(value), nil
+}
+
+// checkPagination вспомогательная функция изменения параметров пагинации страниц
+func checkPaginate(c *gin.Context) {
+	page := c.Query("page")
+	pageInt, err := strconv.Atoi(page)
+	if err != nil || pageInt < 1 {
+		return
+	}
+	indexPage = pageInt
+}
+
+// add вспомогательная функция используется в шаблоне
+func add(args ...int) (int, error) {
+	result := args[0]
+	for _, arg := range args[1:] {
+		result += arg
+	}
+	return result, nil
 }
