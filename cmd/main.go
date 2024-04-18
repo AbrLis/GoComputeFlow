@@ -1,12 +1,12 @@
 package main
 
 import (
-	"GoComputeFlow/internal/frontend"
 	"log"
 
 	"GoComputeFlow/internal/api"
 	"GoComputeFlow/internal/calculator"
 	"GoComputeFlow/internal/database"
+	"GoComputeFlow/internal/frontend"
 	"GoComputeFlow/internal/worker"
 	workerServer "GoComputeFlow/internal/worker/server"
 )
