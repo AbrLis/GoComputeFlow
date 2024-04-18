@@ -1,0 +1,17 @@
+<div class="container">
+    <form class="form" action="/" method="POST">
+        <div class="form-group">
+            <label for="expressionInput">Введите выражение</label>
+            <input type="text" class="form-control" id="expressionInput" name="expression" placeholder="выражение"
+                   required>
+            <small id="expressionHelp" class="form-text text-muted">Поддерживаются операции +,-,*,/. Скобки и другие
+                операции недоступны.</small>
+        </div>
+        {{ if .message}}
+        <p class="text-warning text-muted">
+            {{ .message }}
+        </p>
+        {{end}}
+        <button type="submit" class="btn btn-primary">Отправить</button>
+    </form>
+</div>

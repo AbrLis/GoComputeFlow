@@ -13,6 +13,7 @@ import (
 	"GoComputeFlow/internal/api/auth"
 	"GoComputeFlow/internal/calculator"
 	"GoComputeFlow/internal/database"
+	"GoComputeFlow/internal/models"
 )
 
 var SECRETKEY = os.Getenv("SECRETKEY")
@@ -78,8 +79,15 @@ func LoginUser(c *gin.Context) {
 		return
 	}
 
+	// Добавим токен в бд
+	err = database.AddTokenToUser(uint(msg.Code), tokenString)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
 	log.Println("Успешно получен токен для пользователя", req.Login)
-	c.JSON(200, gin.H{"token": tokenString})
+	c.JSON(200, gin.H{"token": tokenString, "user_id": strconv.Itoa(msg.Code)})
 }
 
 // AddExpressionHandler обработчик для добавления арифметического выражения
@@ -112,9 +120,32 @@ func GetExpressionsHandler(c *gin.Context) {
 		return
 	}
 
-	expressions, err := database.GetAllTasks(userId.(uint))
+	var (
+		expressions []models.Expression
+		err         error
+		limit       = DefaultCountExpressions
+		page        = 1
+	)
+
+	limitExpressions := c.Query("limit")
+	if limitExpressions != "" {
+		limit, err = strconv.Atoi(limitExpressions)
+		if err != nil {
+			c.JSON(500, gin.H{"error": "Неверное значение limit"})
+			return
+		}
+	}
+	pageExpressions := c.Query("page")
+	if pageExpressions != "" {
+		page, err = strconv.Atoi(pageExpressions)
+		if err != nil {
+			c.JSON(500, gin.H{"error": "Неверное значение page"})
+			return
+		}
+	}
+	expressions, err = database.GetNTasks(userId.(uint), limit, page)
 	if err != nil {
-		c.JSON(500, gin.H{"error": "Ошибка получения списка из базы данных"})
+		c.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
 

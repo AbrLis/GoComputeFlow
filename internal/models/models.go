@@ -1,8 +1,9 @@
-package database
+package models
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type InfoModel struct {
@@ -16,6 +17,7 @@ type InfoModel struct {
 type User struct {
 	InfoModel
 	Login        string
+	Token        string
 	HashPassword string
 	Expressions  []Expression `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }

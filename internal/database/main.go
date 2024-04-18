@@ -10,6 +10,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+
+	"GoComputeFlow/internal/models"
 )
 
 var dbExpr *gorm.DB
@@ -24,27 +26,27 @@ func OpenDB() error {
 		},
 	)
 
-	dbExpr, err = gorm.Open(sqlite.Open("database.db"), &gorm.Config{Logger: gormLogger})
+	dbExpr, err = gorm.Open(sqlite.Open("internal/database/database.db"), &gorm.Config{Logger: gormLogger})
 	if err != nil {
 		log.Println("Error opening database: ", err)
 		return err
 	}
 
 	err = dbExpr.AutoMigrate(
-		&Expression{},
-		&User{},
-		&Timeouts{},
+		&models.Expression{},
+		&models.User{},
+		&models.Timeouts{},
 	)
 	if err != nil {
 		log.Println("Error migrating database: ", err)
 		return err
 	}
 
-	dafaultTimeouts := &Timeouts{
-		AddTimeout:      ADDTIMEOUT,
-		SubtractTimeout: SUBTRACTTIMEOUT,
-		MutiplyTimeout:  MULTIPLYTIMEOUT,
-		DivideTimeout:   DIVIDETIMEOUT,
+	dafaultTimeouts := &models.Timeouts{
+		AddTimeout:      models.ADDTIMEOUT,
+		SubtractTimeout: models.SUBTRACTTIMEOUT,
+		MutiplyTimeout:  models.MULTIPLYTIMEOUT,
+		DivideTimeout:   models.DIVIDETIMEOUT,
 	}
 	dbExpr.FirstOrCreate(dafaultTimeouts)
 
@@ -64,7 +66,7 @@ func CreateNewUser(login, password string) (int, error) {
 		return 0, err
 	}
 
-	user := User{Login: login, HashPassword: string(hashPassword)}
+	user := models.User{Login: login, HashPassword: string(hashPassword)}
 	result := dbExpr.Create(&user)
 	if result.Error != nil {
 		log.Println("Error creating user: ", result.Error)
@@ -74,16 +76,28 @@ func CreateNewUser(login, password string) (int, error) {
 	return int(user.ID), nil
 }
 
+// AddTokenToUser добавляет токен в базу данных
+func AddTokenToUser(id uint, token string) error {
+	result := dbExpr.Model(&models.User{}).Where("id = ?", id).Update("token", token)
+	return result.Error
+}
+
 // UserExists проверяет, существует ли пользователь с указанным логином в базе данных
 func UserExists(login string) bool {
-	var user User
+	var user models.User
 	dbExpr.First(&user, "login = ?", login)
 	return user.ID != 0
 }
 
+// TokenExists проверяет, существует ли пользователь с указанным токеном в базе данных
+func TokenExists(token string) bool {
+	res := dbExpr.First(&models.User{}, "token = ?", token)
+	return res.Error == nil
+}
+
 // GetUser возвращает пользователя по его логину
-func GetUser(login string) (User, error) {
-	var user User
+func GetUser(login string) (models.User, error) {
+	var user models.User
 	result := dbExpr.First(&user, "login = ?", login)
 	if result.Error != nil {
 		return user, result.Error
@@ -93,15 +107,15 @@ func GetUser(login string) (User, error) {
 
 // AddExprssion добавляет задачу в базу данных и возвращает её ID
 func AddExprssion(userId uint, expression string) (uint, bool) {
-	expr := Expression{UserId: userId, Expression: expression, Status: StatusInProgress}
+	expr := models.Expression{UserId: userId, Expression: expression, Status: models.StatusInProgress}
 	dbExpr.Create(&expr)
 
 	return expr.InfoModel.ID, true
 }
 
 // SetTaskResult устанавливает результат выполнения задачи
-func SetTaskResult(userId, exprId int, status TaskStatus, result float32) {
-	var expression Expression
+func SetTaskResult(userId, exprId int, status models.TaskStatus, result float32) {
+	var expression models.Expression
 	db := dbExpr.First(&expression, "user_id = ? AND id = ?", userId, exprId)
 	if db.Error != nil {
 		log.Println("!!Error getting expression: ", db.Error)
@@ -111,37 +125,38 @@ func SetTaskResult(userId, exprId int, status TaskStatus, result float32) {
 	}
 
 	expression.Status = status
-	if status == StatusCompleted {
+	if status == models.StatusCompleted {
 		expression.Result = fmt.Sprintf("%v", result)
 	}
 	dbExpr.Save(&expression)
 }
 
-// GetAllTasks возвращает все задачи определённого юзера в базе данных
-func GetAllTasks(userId uint) ([]Expression, error) {
-	var expressions []Expression
-	dbExpr.Find(&expressions, "user_id = ?", userId)
-	return expressions, nil
+// GetNTasks возвращает limit задач на странице page
+func GetNTasks(userId uint, limit, page int) ([]models.Expression, error) {
+	var expressions []models.Expression
+	offset := (page - 1) * limit
+	db := dbExpr.Order("id desc").Limit(limit).Offset(offset).Find(&expressions, "user_id = ?", userId)
+	return expressions, db.Error
 }
 
 // GetTask возвращает задачу по её идентификатору
-func GetTask(userId uint, exprId int) (Expression, error) {
-	var expression Expression
-	dbExpr.First(&expression, "user_id = ? AND id = ?", userId, exprId)
-	return expression, nil
+func GetTask(userId uint, exprId int) (models.Expression, error) {
+	var expression models.Expression
+	db := dbExpr.First(&expression, "user_id = ? AND id = ?", userId, exprId)
+	return expression, db.Error
 }
 
 // GetTimeouts возвращает таймауты вычислителя
-func GetTimeouts() Timeouts {
-	var timeouts Timeouts
+func GetTimeouts() models.Timeouts {
+	var timeouts models.Timeouts
 	dbExpr.First(&timeouts)
 	return timeouts
 }
 
 // SetTimeouts обновляет таймауты вычислителя
 func SetTimeouts(add, subtract, multiply, divide time.Duration) {
-	dbExpr.Model(&Timeouts{}).Where("id = ?", "1").Updates(
-		Timeouts{
+	dbExpr.Model(&models.Timeouts{}).Where("id = ?", "1").Updates(
+		models.Timeouts{
 			AddTimeout:      add,
 			SubtractTimeout: subtract,
 			MutiplyTimeout:  multiply,
@@ -151,9 +166,9 @@ func SetTimeouts(add, subtract, multiply, divide time.Duration) {
 }
 
 // GetAllUnfinishedTasks возвращает все незавершенные задачи из базы данных
-func GetAllUnfinishedTasks() ([]Expression, error) {
-	var expressions []Expression
-	result := dbExpr.Find(&expressions, "status = ?", StatusInProgress)
+func GetAllUnfinishedTasks() ([]models.Expression, error) {
+	var expressions []models.Expression
+	result := dbExpr.Find(&expressions, "status = ?", models.StatusInProgress)
 	if result.Error != nil {
 		return expressions, result.Error
 	}

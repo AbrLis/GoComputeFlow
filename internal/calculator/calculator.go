@@ -11,6 +11,7 @@ import (
 
 	"GoComputeFlow/internal/calculator/client"
 	"GoComputeFlow/internal/database"
+	"GoComputeFlow/internal/models"
 	pb "GoComputeFlow/internal/worker/proto"
 )
 
@@ -53,9 +54,9 @@ func runCollector() {
 				log.Println("!!Error getting result in grpc!!: ", err)
 				continue
 			}
-			status := database.StatusCompleted
+			status := models.StatusCompleted
 			if task.FlagError {
-				status = database.StatusError
+				status = models.StatusError
 			}
 			database.SetTaskResult(
 				int(task.UserId),

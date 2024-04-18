@@ -6,6 +6,7 @@ import (
 	"GoComputeFlow/internal/api"
 	"GoComputeFlow/internal/calculator"
 	"GoComputeFlow/internal/database"
+	"GoComputeFlow/internal/frontend"
 	"GoComputeFlow/internal/worker"
 	workerServer "GoComputeFlow/internal/worker/server"
 )
@@ -27,5 +28,8 @@ func main() {
 	calculator.CreateCalculators()
 
 	// Запуск API
-	api.StartServer(api.HostPath, api.PortHost)
+	go api.StartServer(api.HostPath, api.PortHost)
+
+	// Запуск фронта
+	frontend.StartFront()
 }

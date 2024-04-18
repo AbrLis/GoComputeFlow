@@ -12,12 +12,16 @@ POST http://localhost:3000/api/v1/login
 Content-Type: application/json
 
 {
-    "login": "admin2",
-    "password": "admin2"
+    "login": "admin",
+    "password": "admin"
 }
 
 ### Получение списка всех выражений пользователя
 GET http://localhost:3000/api/v1/get-expressions
+Authorization: Bearer {{jwt}}
+
+### Получение данных с пагинацией
+GET http://localhost:3000/api/v1/get-expressions?page=1&limit=10
 Authorization: Bearer {{jwt}}
 
 ### Добавление выражений на вычисление
@@ -30,6 +34,7 @@ Content-Type: text/plain
 ### Получение значения по идентификатору
 GET http://localhost:3000/api/v1/get-value/1
 Authorization: Bearer {{jwt}}
+
 
 ### Получение времени выполнения операций
 GET http://localhost:3000/api/v1/get-operations

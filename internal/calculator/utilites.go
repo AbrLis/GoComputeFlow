@@ -16,7 +16,7 @@ func ParseExpression(expr string) ([]*pb.Token, error) {
 	var buffer string
 
 	for _, ch := range expr {
-		if unicode.IsDigit(ch) {
+		if unicode.IsDigit(ch) || ch == '.' {
 			buffer += string(ch)
 		} else if strings.ContainsRune("+-*/", ch) {
 			if buffer != "" {

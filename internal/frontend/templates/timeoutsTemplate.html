@@ -1,0 +1,35 @@
+<div class="container">
+    <h5 class="text-center">Таймауты операций</h5>
+    <p class="text-center">Здесь можно установить или посмотреть таймауты операций, время исполнения которых задаётся в
+        секундах</p>
+    {{ if .errorMessage }}
+    <p class="text-center text-warning">{{ .errorMessage }}</p>
+    {{ end }}
+    <form class="form-group" action="/changeTimeouts" method="POST">
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="input1">Add</label>
+                <input type="number" class="form-control" id="input1" name="add" value="{{ .add }}" step="any" min="0"
+                       required>
+            </div>
+            <div class="form-group col-md-6">
+                <label for="input2">Sub</label>
+                <input type="number" class="form-control" id="input2" name="sub" value="{{ .sub }}" step="any" min="0"
+                       required>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="input3">Mult</label>
+                <input type="number" class="form-control" id="input3" name="mul" value="{{ .mul }}" step="any" min="0"
+                       required>
+            </div>
+            <div class="form-group col-md-6">
+                <label for="input4">Div</label>
+                <input type="number" class="form-control" id="input4" name="div" value="{{ .div }}" step="any" min="0"
+                       required>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Применить</button>
+    </form>
+</div>

@@ -13,3 +13,7 @@ const (
 	registerPath       = "/register"           // API для регистрации пользователя
 	LoginPath          = "/login"              // API для входа пользователя
 )
+
+const (
+	DefaultCountExpressions = 100 // Возвращаемое количество выражений по умолчанию для общего вывода
+)
