@@ -12,15 +12,12 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"GoComputeFlow/internal/api"
-	"GoComputeFlow/internal/models"
 )
 
 type tokenJWT struct {
 	Token  string `json:"token"`
 	UserID string `json:"user_id"`
 }
-
-var indexPage = 1 // Текущая страница
 
 func render(c *gin.Context, templateName string, data gin.H) {
 	c.HTML(200, templateName, data)
@@ -45,46 +42,22 @@ func showMonitoring(c *gin.Context) {
 		"monitoring":   result,
 		"errorMessage": message,
 		"is_logged_in": true,
+		"activePage":   "Monitoring",
 	})
 }
 
 // showTimeoutsPage отображает страницу таймаутов операций
 func showTimeoutsPage(c *gin.Context) {
-	var (
-		errorMessage = ""
-		response     map[string]string
-	)
-	operations, err := sendAPIRequest("/get-operations", "GET", nil, "")
-	if err != nil {
-		showErrorTimeoutsPage(c, err.Error())
-		return
-	}
-	err = json.Unmarshal(operations, &response)
-	if err != nil {
-		showErrorTimeoutsPage(c, err.Error())
-		return
-	}
+	data := getIndexTimeoutsData(c)
 
-	addTimout, err1 := parsingTimeOut(response["+"])
-	subTimout, err2 := parsingTimeOut(response["-"])
-	mulTimout, err3 := parsingTimeOut(response["*"])
-	divTimout, err4 := parsingTimeOut(response["/"])
-
-	if err1 != nil || err2 != nil || err3 != nil || err4 != nil {
-		showErrorTimeoutsPage(c, err.Error())
-		return
-	}
-
-	if message, _ := c.Cookie("message"); message != "" {
-		errorMessage += message
-	}
 	render(c, "indexChangeOperations.html", gin.H{
 		"is_logged_in": true,
-		"errorMessage": errorMessage,
-		"add":          addTimout,
-		"sub":          subTimout,
-		"mul":          mulTimout,
-		"div":          divTimout,
+		"errorMessage": data.Message,
+		"add":          data.Add,
+		"sub":          data.Sub,
+		"mul":          data.Mul,
+		"div":          data.Div,
+		"activePage":   "Timeouts",
 	})
 }
 
@@ -93,79 +66,48 @@ func showErrorTimeoutsPage(c *gin.Context, message string) {
 	render(c, "indexChangeOperations.html", gin.H{
 		"is_logged_in": true,
 		"errorMessage": message,
+		"activePage":   "Timeouts",
 	})
 }
 
 // performChangeTimeouts изменяет таймауты операций - обработка формы
 func performChangeTimeouts(c *gin.Context) {
-	add := c.PostForm("add")
+	adds := c.PostForm("add")
 	sub := c.PostForm("sub")
 	mul := c.PostForm("mul")
 	div := c.PostForm("div")
-	query := fmt.Sprintf("/set-operations?add=%s&sub=%s&mul=%s&div=%s", add, sub, mul, div)
 	jwtKey, ok := c.Get("jwt_key")
 	if !ok {
 		log.Println("Error get jwt_key")
 		c.SetCookie("message", "Error get jwt_key", timeLifeCookie, "/", "", false, true)
-		c.Redirect(http.StatusFound, "/changeTimeouts")
-		c.Abort()
+		c.Redirect(http.StatusSeeOther, "/changeTimeouts")
+		return
 	}
 	header := fmt.Sprintf("Bearer %s", jwtKey)
+	query := fmt.Sprintf("/set-operations?add=%s&sub=%s&mul=%s&div=%s", adds, sub, mul, div)
 	resp, err := sendAPIRequest(query, "POST", nil, header)
 	log.Println(string(resp))
 	if err != nil {
 		log.Println("Error sendAPIRequest: ", err)
 		c.SetCookie("message", err.Error(), timeLifeCookie, "/", "", false, true)
 	}
-	c.Redirect(http.StatusFound, "/changeTimeouts")
+	c.Redirect(http.StatusSeeOther, "/changeTimeouts")
 }
 
 // showIndexPage отображает главную страницу
 func showIndexPage(c *gin.Context) {
 	// Запрос информации об операциях и её добавление в шаблон
-	var (
-		message    string
-		dataStruct []models.Expression
-		offset     = 0
-	)
-
-	checkPaginate(c)
-	if indexPage > 1 {
-		offset = (indexPage - 1) * (CountExpression - 1)
-	}
-	jwt, _ := c.Get("jwt_key")
-	header := fmt.Sprintf("Bearer %s", jwt.(string))
-	data, err := sendAPIRequest(fmt.Sprintf("/get-expressions?limit=%d&page=%d&offset=%d", CountExpression, indexPage, offset), "GET", nil, header)
-	if errors.Is(err, errorUnauthorized) {
-		c.Redirect(http.StatusFound, "/login")
-		return
-	}
-	if err != nil {
-		log.Println("Error sendAPIRequest: ", err)
-		message = err.Error()
-	} else {
-		err = json.Unmarshal(data, &dataStruct)
-		if err != nil {
-			message = err.Error()
-		} else {
-			message, _ = c.Cookie("message")
-		}
-	}
-
-	isNext := false
-	if len(dataStruct) == CountExpression {
-		dataStruct = dataStruct[:CountExpression-1]
-		isNext = true
-	}
+	getIndexPageData(c)
 
 	render(c, "index.html", gin.H{
-		"expressions":      dataStruct,
+		"expressions":      indexData.Expressions,
 		"is_logged_in":     true,
 		"count_expression": CountExpression - 1,
-		"message":          message,
-		"isNext":           isNext,
-		"isPrevious":       indexPage > 1,
-		"myPage":           indexPage,
+		"message":          indexData.Message,
+		"isNext":           indexData.IsNext,
+		"isPrevious":       indexData.MyPage > 1,
+		"myPage":           indexData.MyPage,
+		"activePage":       "Home",
 	})
 }
 
