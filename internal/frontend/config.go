@@ -1,6 +1,7 @@
 package frontend
 
 import (
+	"GoComputeFlow/internal/models"
 	"errors"
 )
 
@@ -9,7 +10,25 @@ const (
 	CountExpression = 11 // Количество выражений на главной странице
 )
 
-var errorsTimeout = errors.New("timeouts parsing error")
-var errorAPI = errors.New("API error")
-var errorUnauthorized = errors.New("errorUnauthorized")
+var (
+	errorAPI            = errors.New("API error")
+	errorsTimeout       = errors.New("timeouts parsing error")
+	errorParsingTimeout = errors.New("parsing timeouts error")
+	errorUnauthorized   = errors.New("errorUnauthorized")
+)
 var timeLifeCookie = 2
+
+type indexPageData struct {
+	Expressions []models.Expression
+	Message     string
+	IsNext      bool
+	MyPage      int
+}
+
+type indexPageMonitoring struct {
+	Message string
+	Add     float32
+	Sub     float32
+	Mul     float32
+	Div     float32
+}
