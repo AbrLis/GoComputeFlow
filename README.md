@@ -40,6 +40,8 @@
 - Установка времени выполнения операции. `api/v1/set-operations`
 - Мониторинг воркеров - получение времени последнего отклика. `api/v1/monitoring`
 
+gin специально оставлен в debug режиме для наглядности работы API и ответов.
+
 [Назад к оглавлению](#оглавление)
 
 ---
@@ -48,6 +50,8 @@
 - Клонировать репозиторий
 - Перейти в папку проекта и установить зависимости
 ```shell
+git clone https://github.com/AbrLis/GoComputeFlow.git
+cd GoComputeFlow
 go mod download
 ```
 - Запустить проект с помощью команды 
@@ -66,6 +70,8 @@ API проекта будет доступно по адресу `http://localho
 - Клонировать репозиторий
 - Запустить команду из дирректории проекта
 ```shell
+git clone https://github.com/AbrLis/GoComputeFlow.git
+cd GoComputeFlow
 docker-compose up
 ```
 API проекта будет доступно по адресу `http://localhost:3000`
