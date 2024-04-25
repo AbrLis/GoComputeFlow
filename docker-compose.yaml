@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   app:
-    image: go_copmute_flow
+    image: go_copmpute_flow
     container_name: GoComputeFlow
     build:
       context: .
