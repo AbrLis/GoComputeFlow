@@ -1,6 +1,8 @@
 version: '3.8'
 services:
   app:
+    image: go_copmute_flow
+    container_name: GoComputeFlow
     build:
       context: .
       dockerfile: Dockerfile
@@ -9,5 +11,7 @@ services:
     ports:
       - "3000:3000"
       - "8080:8080"
+    env_file:
+      - .env
 volumes:
   data-volume:

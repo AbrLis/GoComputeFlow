@@ -4,20 +4,18 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 
+	"GoComputeFlow/internal/api/apiConfig"
 	"GoComputeFlow/internal/api/auth"
 	"GoComputeFlow/internal/calculator"
 	"GoComputeFlow/internal/database"
 	"GoComputeFlow/internal/models"
 )
-
-var SECRETKEY = os.Getenv("SECRETKEY")
 
 type RegisterUserRequest struct {
 	Login    string `json:"login"`
@@ -74,7 +72,7 @@ func LoginUser(c *gin.Context) {
 		},
 	)
 
-	tokenString, err := token.SignedString([]byte(SECRETKEY))
+	tokenString, err := token.SignedString([]byte(apiConfig.SECRETKEY))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -106,7 +104,7 @@ func AddExpressionHandler(c *gin.Context) {
 		return
 	}
 	if ok := calculator.AddExpressionToQueue(string(bodyBytes), userId.(uint), true, 0); !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error parsing exprssion"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Error parsing exprssion"})
 		return
 	}
 
@@ -124,7 +122,7 @@ func GetExpressionsHandler(c *gin.Context) {
 	var (
 		expressions []models.Expression
 		err         error
-		limit       = DefaultCountExpressions
+		limit       = apiConfig.DefaultCountExpressions
 		page        = 1
 	)
 
