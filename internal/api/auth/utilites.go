@@ -1,9 +1,10 @@
 package auth
 
 import (
-	"GoComputeFlow/internal/database"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
+
+	"GoComputeFlow/internal/database"
 )
 
 type Error struct {

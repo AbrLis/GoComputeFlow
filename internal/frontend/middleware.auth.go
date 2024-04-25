@@ -13,7 +13,7 @@ func loggedIn() gin.HandlerFunc {
 			} else {
 				c.Set("is_logged_in", false)
 				c.Redirect(http.StatusFound, "/login")
-				c.Abort()
+				return
 			}
 		}
 		setLoggedIn("jwt_key")
