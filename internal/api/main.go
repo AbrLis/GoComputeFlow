@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"GoComputeFlow/internal/api/apiConfig"
 	"GoComputeFlow/internal/api/auth"
 )
 
@@ -12,17 +13,17 @@ func StartServer(host, port string) {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
-	apiRouters := router.Group(apiVersion)
+	apiRouters := router.Group(apiConfig.ApiVersion)
 	{
-		apiRouters.POST(registerPath, RegisterUser)
-		apiRouters.POST(LoginPath, LoginUser)
+		apiRouters.POST(apiConfig.RegisterPath, RegisterUser)
+		apiRouters.POST(apiConfig.LoginPath, LoginUser)
 
-		apiRouters.POST(addExpressionPath, auth.EnsureAuth(), AddExpressionHandler)
-		apiRouters.GET(getExpressionsPath, auth.EnsureAuth(), GetExpressionsHandler)
-		apiRouters.GET(getValuePath, auth.EnsureAuth(), GetValueHandler)
-		apiRouters.GET(getOperationsPath, GetOperationsHandler)
-		apiRouters.POST(setOperationsPath, auth.EnsureAuth(), SetOperationsHandler)
-		apiRouters.GET(monitoringPath, GetMonitoringHandler)
+		apiRouters.POST(apiConfig.AddExpressionPath, auth.EnsureAuth(), AddExpressionHandler)
+		apiRouters.GET(apiConfig.GetExpressionsPath, auth.EnsureAuth(), GetExpressionsHandler)
+		apiRouters.GET(apiConfig.GetValuePath, auth.EnsureAuth(), GetValueHandler)
+		apiRouters.GET(apiConfig.GetOperationsPath, GetOperationsHandler)
+		apiRouters.POST(apiConfig.SetOperationsPath, auth.EnsureAuth(), SetOperationsHandler)
+		apiRouters.GET(apiConfig.MonitoringPath, GetMonitoringHandler)
 	}
 
 	log.Printf("Starting server on %s%s ", host, port)
