@@ -1,16 +1,14 @@
 package auth
 
 import (
-	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 
+	"GoComputeFlow/internal/api/apiConfig"
 	"GoComputeFlow/internal/database"
 )
-
-var SECRETKEY = os.Getenv("SECRETKEY")
 
 func EnsureAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -30,7 +28,7 @@ func EnsureAuth() gin.HandlerFunc {
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 					return nil, jwt.ErrSignatureInvalid
 				}
-				return []byte(SECRETKEY), nil
+				return []byte(apiConfig.SECRETKEY), nil
 			},
 		)
 
