@@ -43,7 +43,8 @@ func sendAPIRequest(path string, method string, data *bytes.Reader, header strin
 		return nil, errorUnauthorized
 	}
 	if resp.StatusCode != 200 {
-		return nil, errorAPI
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("code: %d response: %s", resp.StatusCode, string(body))
 	}
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
